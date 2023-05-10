@@ -1,0 +1,7 @@
+.vscode
+__pycache__
+venv_*/
+lib/
+lib64/
+*.egg-info/
+
