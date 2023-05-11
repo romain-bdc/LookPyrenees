@@ -5,6 +5,7 @@ from shapely.geometry import mapping
 import datetime
 import os
 import glob
+import logging
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import rasterio as rio
@@ -22,7 +23,7 @@ def write_raster(path, raster, crs, transform, nodata, driver='GTiff'):
                        count=1, dtype=raster.dtype, crs=crs, transform=transform, nodata=nodata) as dst:
         dst.write(raster, 1)
 
-def search_data(workspace, dag, pref_provider='cop_dataspace'):
+def search_data(workspace, dag, pref_provider):
     geom={'lonmin':1, 'latmin' : 43 , 'lonmax' :3,'latmax':44}
     end=datetime.date.today()
     last_month = end - datetime.timedelta(days=30)
@@ -45,7 +46,10 @@ def search_data(workspace, dag, pref_provider='cop_dataspace'):
     dag.set_preferred_provider(pref_provider)
     search_results, total_count = dag.search(**default_search_criteria)
 
-    print(f"Number of products found : {total_count}")
+    if total_count==0:
+        raise ValueError("No products found")
+    
+    logging.info(f"Number of products found : {total_count}")
     
     if 'quicklook' in search_results[0].properties.keys():
         quicklooks_dir = os.path.join(workspace, "quicklooks")
@@ -71,7 +75,7 @@ def search_data(workspace, dag, pref_provider='cop_dataspace'):
 
 def filter_img(search_results, dag, search_geometry):
     #filter_results=search_results.filter_property(operator="eq", relativeOrbitNumber=51)
-    filter_results=search_results.crunch(FilterOverlap(dict(minimum_overlap=90)), geometry=search_geometry)
+    filter_results=search_results.crunch(FilterOverlap(dict(minimum_overlap=95)), geometry=search_geometry)
     
     print(f'filter results overlapped are : {filter_results} with size of {len(filter_results)}')
     cc=100
@@ -80,32 +84,32 @@ def filter_img(search_results, dag, search_geometry):
             final_img=img
             cc=img.properties['cloudCover']
 
-    print(f"FINAL RESULTS : {final_img}")
+    print(f"Final product selected : {final_img}")
     out_path=dag.download(final_img)
 
     return out_path
 
 
-def cropzone(zone, out_dir):
+def cropzone(zone, out_dir, pref_provider='cop_dataspace'):
 
     #aoi='/'.join(out_dir.split('/')[:-3])
     aoi_path=glob.glob(f"{out_dir}/zones/*.shp")
     
     crop_extent = gpd.read_file(aoi_path[0])
     new_crop = gpd.read_file(aoi_path[0], mask=crop_extent[crop_extent.NAME==zone])
-    print(f'CROP EXTENT GEOM : {new_crop["geometry"][0]} of type {type(new_crop["geometry"])}')
     
     search_geometry=new_crop["geometry"][0]
     dag=EODataAccessGateway()
     workspace=f"{os.getenv('HOME')}/data/snow"
-    search_results = search_data(workspace, dag, pref_provider='peps')
+
+    search_results = search_data(workspace, dag, pref_provider)
     out_path=filter_img(search_results, dag, search_geometry)
     img_path=glob.glob(f"{out_path}/GRANULE/*/IMG_DATA/*_TCI.jp2", recursive=True)[0]
 
     raster = rxr.open_rasterio(img_path,
                                 masked=True).squeeze()
-    print('crop extent crs: ', new_crop.crs)
-    print('raster crs: ', raster.rio.crs)
+    logging.info('crop extent crs: ', new_crop.crs)
+    logging.info('raster crs: ', raster.rio.crs)
 
     raster_clipped = raster.rio.clip(new_crop.geometry.apply(mapping),
                                         new_crop.crs)
@@ -128,4 +132,4 @@ def cropzone(zone, out_dir):
 # img_path=glob.glob(f"{out_path}/GRANULE/*/IMG_DATA/*_TCI.jp2", recursive=True)
 # print(f"IMG PATH {img_path}")
 out_path=f"{os.getenv('HOME')}/data/snow/"
-cropzone('3seigneurs',out_path)
+cropzone('montcalm',out_path, pref_provider='peps')
