@@ -94,7 +94,7 @@ def lim_cloudcover(filtered_img):
 
     return final_img, too_cloudy
 
-def filter_img(search_results, dag, new_crop):
+def filter_img(search_results, dag, new_crop, outdir):
     """
     Filter images based on overlapped parameters, date and cloudcover
     """
@@ -114,10 +114,10 @@ def filter_img(search_results, dag, new_crop):
     final_img, too_cloudy = lim_cloudcover(filter_results_date)
 
     if not too_cloudy:
-        out_path = dag.download(final_img)
+        out_path = dag.download(final_img, outputs_prefix=outdir)
     else:
         final_img, _ = lim_cloudcover(filter_results)
-        out_path = dag.download(final_img)
+        out_path = dag.download(search_result=final_img, outputs_prefix=outdir)
 
     final_date = final_img.properties['modificationDate']
     final_cc = round(final_img.properties['cloudCover'], ndigits=2)
@@ -142,7 +142,8 @@ def cropzone(zone, new_crop, out_path):
                                      new_crop.crs)
 
     tif_file = img_path.split('/')[-1].split('.')[0]
-    path_to_tif_file = os.path.join(out_path, tif_file+f'_{zone}.tif')
+    output_img = '/'.join(out_path.split('/')[:-2])
+    path_to_tif_file = os.path.join(output_img, tif_file+f'_{zone}.tif')
     # Write the data to a new geotiff file
     raster_clipped.rio.to_raster(path_to_tif_file)
 
@@ -158,7 +159,7 @@ def process(zone, outdir, pref_provider, plot_res):
     aoi_path = glob.glob(f"{os.getcwd()}/ressources/zones/*.shp")
     crop_extent = gpd.read_file(aoi_path[0])
     new_crop = gpd.read_file(aoi_path[0], mask=crop_extent[crop_extent.NAME == zone])
-    out_path = filter_img(search_results, dag, new_crop)
+    out_path = filter_img(search_results, dag, new_crop, outdir)
 
     file_path = cropzone(zone, new_crop, out_path)
 

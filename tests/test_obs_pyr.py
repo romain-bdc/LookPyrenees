@@ -10,15 +10,15 @@ import matplotlib.image as mpimg
 import geopandas as gpd
 
 from eodag import EODataAccessGateway
-from lookpyrenees.download import (search_data,
-                                   filter_img,
-                                   cropzone,
-                                   process)
+from src.lookpyrenees.download import (search_data,
+                                       filter_img,
+                                       cropzone,
+                                       process)
 
 class TestClassifBase(unittest.TestCase):
     """Setup class"""
     def setUp(self):
-        self.path = f'{os.getenv("HOME")}/data/snow/'
+        self.path = f'{os.getenv("HOME")}/data/snow/output_img'
 
     def test_search_data(self):
         """ Test to search data on provider
@@ -44,7 +44,10 @@ class TestClassifBase(unittest.TestCase):
         crop_extent = gpd.read_file(aoi_path[0])
 
         crop = gpd.read_file(aoi_path[0], mask=crop_extent[crop_extent.NAME == zone])
-        filtered_results = filter_img(search_results, dag, crop)
+        filtered_results = filter_img(search_results=search_results,
+                                      dag=dag,
+                                      new_crop=crop,
+                                      outdir=self.path)
         print(f"filtered_results : {filtered_results}")
 
     def test_cropzone(self):
@@ -59,7 +62,7 @@ class TestClassifBase(unittest.TestCase):
         aoi_path = glob.glob(f"{os.getcwd()}/ressources/zones/*.shp")
         crop_extent = gpd.read_file(aoi_path[0])
         crop = gpd.read_file(aoi_path[0], mask=crop_extent[crop_extent.NAME == zone])
-        out_path = filter_img(search_results, dag, crop)
+        out_path = filter_img(search_results, dag, crop, self.path)
 
         file_path = cropzone(zone, crop, out_path)
         img = mpimg.imread(file_path)
