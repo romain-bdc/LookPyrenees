@@ -4,4 +4,5 @@ venv_*/
 lib/
 lib64/
 *.egg-info/
+dist
 
