@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-from setuptools import setup, find_packages
+"""Setup modules and dependencies"""
+from setuptools import setup
 
 setup(
     name='LookPyrenees',
@@ -25,9 +26,9 @@ setup(
         'urllib3==1.25.8',
         'xarray==2023.1.0',
     ],
-    entry_points = {
-    "console_scripts": [
-        "LookPyrenees = lookpyrenees.cli:run",
+    entry_points={
+        "console_scripts": [
+            "LookPyrenees = lookpyrenees.cli:run",
         ]
     },
 )

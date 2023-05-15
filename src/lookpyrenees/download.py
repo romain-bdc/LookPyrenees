@@ -1,4 +1,5 @@
 """This module allow to search, crop and download zone of PYrenees"""
+# pylint: disable=import-error
 import datetime
 import os
 import glob
@@ -13,9 +14,6 @@ import matplotlib.image as mpimg
 import rasterio as rio
 import rioxarray as rxr
 import geopandas as gpd
-#import numpy
-#print(numpy.__version__)
-#print(numpy.__path__)
 
 setup_logging(2)  # 0: nothing, 1: only progress bars, 2: INFO, 3: DEBUG
 logging.basicConfig()
@@ -103,7 +101,7 @@ def filter_img(search_results, dag, new_crop):
     search_geometry = new_crop["geometry"][0]
 
     filter_results = search_results.crunch(
-        FilterOverlap(dict(minimum_overlap=100)), geometry=search_geometry)
+        FilterOverlap({"minimum_overlap" :100}), geometry=search_geometry)
     logging.info('filter results overlapped are : %s with size of %s',
                  filter_results,
                  len(filter_results))
@@ -112,7 +110,7 @@ def filter_img(search_results, dag, new_crop):
 
     middle = datetime.datetime.strptime(recent, '%Y-%m-%d').date() - datetime.timedelta(days=10)
     filter_results_date = filter_results.crunch(
-        FilterDate(dict(start=str(middle), end=str(recent))))
+        FilterDate({'start': str(middle), 'end':str(recent)}))
     final_img, too_cloudy = lim_cloudcover(filter_results_date)
 
     if not too_cloudy:
