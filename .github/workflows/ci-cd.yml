@@ -31,7 +31,7 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         python -m pip install pylint
-        pylint --output-format=text $(find -type f -name "*.py" ! -path "**/venv/**")
+        pylint --fail-under=9 --output-format=text $(find -type f -name "*.py" ! -path "**/venv/**")
 
     - name: Analysing the code with mypy
       run: |

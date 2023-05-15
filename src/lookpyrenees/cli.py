@@ -1,3 +1,4 @@
+"""CLI to run LookPyrenees module"""
 import argparse
 import logging
 from pathlib import Path
@@ -8,8 +9,6 @@ from download import process
 
 __author__ = "Romain Buguet de Chargère"
 __copyright__ = "Romain Buguet de Chargère"
-
-_logger = logging.getLogger(__name__)
 
 
 
@@ -27,7 +26,7 @@ def parse_args(args):
     parser = argparse.ArgumentParser(description="Workflow that download last images of Pyrenees")
 
     parser.add_argument(dest="zone", help="zone of Pyrenees to view", type=str)
-    parser.add_argument(dest='out_path', help='Output dirpath where store Pyrenees image', type=Path)
+    parser.add_argument(dest='out_path', help='Output dirpath to store Pyrenees image', type=Path)
 
     parser.add_argument(
         "-p",
