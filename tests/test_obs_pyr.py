@@ -10,7 +10,7 @@ import matplotlib.image as mpimg
 import geopandas as gpd
 
 from eodag import EODataAccessGateway
-from src.lookpyrenees.download import (search_data,
+from lookpyrenees.download import (search_data,
                                        filter_img,
                                        cropzone,
                                        process,
