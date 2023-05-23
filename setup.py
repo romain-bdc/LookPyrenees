@@ -31,6 +31,6 @@ setup(
             "LookPyrenees = lookpyrenees.cli:run",
         ]
     },
-)
+) 
 # packages=find_packages(),
 # include_package_data=True,

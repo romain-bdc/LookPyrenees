@@ -5,4 +5,5 @@ lib/
 lib64/
 *.egg-info/
 dist
+conf.txt
 

@@ -5,7 +5,8 @@ from pathlib import Path
 import sys
 
 from __init__ import __version__
-from download import process
+from src.lookpyrenees.download import process
+#from lookpyrenees import *
 
 __author__ = "Romain Buguet de Chargère"
 __copyright__ = "Romain Buguet de Chargère"
@@ -34,7 +35,7 @@ def parse_args(args):
         dest="pref_provider",
         help="Select preferred provider",
         type=str,
-        default='peps',
+        default='cop_dataspace',
     )
     parser.add_argument(
         "-s",
@@ -80,7 +81,6 @@ def setup_logging(loglevel):
         level=loglevel, stream=sys.stdout, format=logformat, datefmt="%Y-%m-%d %H:%M:%S"
     )
 
-
 def main(args):
     """Download, process and upload agera5 cog file for a year on
     ewoc-aux-data bucket
@@ -97,7 +97,6 @@ def main(args):
             pref_provider=args.pref_provider,
             plot_res=args.plot_results,
             )
-
 
 def run():
     """Calls :func:`main` passing the CLI arguments extracted from :obj:`sys.argv`
