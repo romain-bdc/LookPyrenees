@@ -12,6 +12,7 @@ setup(
         'earthpy==0.9.4',
         'eodag==2.10.0',
         'fire==0.4.0',
+        'folium==0.14.0',
         'geopandas==0.9.0',
         'matplotlib==3.7.1',
         'pandas==1.4.4',
@@ -31,6 +32,6 @@ setup(
             "LookPyrenees = lookpyrenees.cli:run",
         ]
     },
-)
+) 
 # packages=find_packages(),
 # include_package_data=True,
