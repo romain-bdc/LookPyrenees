@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 
 from __init__ import __version__
-from lookpyrenees.download import process
+from download import process
 #from lookpyrenees import *
 
 __author__ = "Romain Buguet de Chargère"
