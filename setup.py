@@ -4,6 +4,8 @@ from setuptools import setup
 
 setup(
     name='LookPyrenees',
+    package_dir = {"": "src"},
+    packages=['LookPyrenees'],
     version='0.0.1',
     author='Romain Buguet de Chargère',
     author_email='rbuguet@gmail.com',
@@ -29,7 +31,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "LookPyrenees = lookpyrenees.cli:run",
+            "LookPyrenees = LookPyrenees.cli:run",
         ]
     },
 ) 
