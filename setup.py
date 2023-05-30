@@ -15,7 +15,7 @@ setup(
         'eodag==2.10.0',
         'fire==0.4.0',
         'folium==0.14.0',
-        'geopandas==0.9.0',
+        'geopandas>=0.9.0',
         'matplotlib==3.7.1',
         'pandas==1.4.4',
         'python-dateutil<2.9',
