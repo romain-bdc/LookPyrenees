@@ -24,7 +24,7 @@ setup(
         'requests<3',
         'rioxarray==0.13.4',
         'scipy==1.9.1',
-        'Shapely>=1.7',
+        'Shapely>=1.8',
         'tqdm==4.64.1',
         'urllib3==1.25.8',
         'xarray==2023.1.0',
@@ -34,6 +34,4 @@ setup(
             "LookPyrenees = LookPyrenees.cli:run",
         ]
     },
-) 
-# packages=find_packages(),
-# include_package_data=True,
+)
