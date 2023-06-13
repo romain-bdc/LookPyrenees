@@ -10,7 +10,7 @@ import matplotlib.image as mpimg
 import geopandas as gpd
 
 from eodag import EODataAccessGateway
-from src.lookpyrenees.download import (search_data,
+from LookPyrenees.download import (search_data,
                                        filter_img,
                                        cropzone,
                                        process,
@@ -27,7 +27,7 @@ class TestClassifBase(unittest.TestCase):
         dag = EODataAccessGateway()
         search_results = search_data(workspace=self.path,
                                      dag=dag,
-                                     pref_provider='peps',
+                                     pref_provider='cop_dataspace',
                                      plot_res=False)
         print(f'search_results : {search_results}')
         return search_results
@@ -35,13 +35,13 @@ class TestClassifBase(unittest.TestCase):
     def test_filter_img(self):
         """ Test the filtering of Montcalm zone
         """
-        zone = 'montcalm'
+        zone = 'carlit'
         dag = EODataAccessGateway()
         search_results = search_data(workspace=self.path,
                                      dag=dag,
                                      pref_provider='cop_dataspace',
                                      plot_res=False)
-        aoi_path = glob.glob(f"{os.getcwd()}/ressources/new_zone.shp")
+        aoi_path = glob.glob(f"{os.getcwd()}/ressources/zone_4326.shp")
         crop_extent = gpd.read_file(aoi_path[0])
 
         crop = gpd.read_file(aoi_path[0], mask=crop_extent[crop_extent.NAME == zone])
@@ -59,9 +59,9 @@ class TestClassifBase(unittest.TestCase):
         dag = EODataAccessGateway()
         search_results = search_data(workspace=self.path,
                                      dag=dag,
-                                     pref_provider='peps',
+                                     pref_provider='cop_dataspace',
                                      plot_res=False)
-        aoi_path = glob.glob(f"{os.getcwd()}/ressources/zones/*.shp")
+        aoi_path = glob.glob(f"{os.getcwd()}/ressources/zone_4326.shp")
         crop_extent = gpd.read_file(aoi_path[0])
         crop = gpd.read_file(aoi_path[0], mask=crop_extent[crop_extent.NAME == zone])
         out_path = filter_img(search_results, dag, crop, self.path)
@@ -77,7 +77,7 @@ class TestClassifBase(unittest.TestCase):
         zone = 'rulhe_nerassol'
         file_path = process(zone=zone,
                             outdir=self.path,
-                            pref_provider='peps',
+                            pref_provider='cop_dataspace',
                             plot_res=False)
         img = mpimg.imread(file_path)
         plt.imshow(img)

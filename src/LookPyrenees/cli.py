@@ -4,13 +4,11 @@ import logging
 from pathlib import Path
 import sys
 
-from __init__ import __version__
-from download import process
-#from lookpyrenees import *
+from LookPyrenees.download import process
 
 __author__ = "Romain Buguet de Chargère"
 __copyright__ = "Romain Buguet de Chargère"
-
+__version__ = "0.0.1"
 
 
 # ---- CLI ----
@@ -48,7 +46,7 @@ def parse_args(args):
     parser.add_argument(
         "--version",
         action="version",
-        version=f"ewoc_generate_agera5_yearly {__version__}")
+        version=f"Look Pyrenees version : {__version__}")
 
     parser.add_argument(
         "-v",
@@ -82,8 +80,7 @@ def setup_logging(loglevel):
     )
 
 def main(args):
-    """Download, process and upload agera5 cog file for a year on
-    ewoc-aux-data bucket
+    """Download and crop area of interest of pyrenees to monitor snow
 
     Args:
       args (List[str]): command line parameters as list of strings

@@ -4,18 +4,19 @@ import datetime
 import os
 import glob
 import logging
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import folium
 
 from shapely.geometry import mapping
 from eodag import EODataAccessGateway, setup_logging
 from eodag.crunch import FilterOverlap, FilterDate
+from eodag.api.search_result import SearchResult
 
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 import rasterio as rio
 import rioxarray as rxr
 import geopandas as gpd
-import numpy as np
 
 setup_logging(2)  # 0: nothing, 1: only progress bars, 2: INFO, 3: DEBUG
 logging.basicConfig()
@@ -134,42 +135,53 @@ def filter_img(search_results, dag, new_crop, outdir):
     Filter images based on overlapped parameters, date and cloudcover
     """
     search_geometry = new_crop["geometry"][0]
-
     contains = check_coverage(search_results, search_geometry)
+
     if any(contains):
+        logging.info("The search geometry is contained in one product")
         filter_results = search_results.crunch(
             FilterOverlap(dict(contains=True)), geometry=search_geometry)
+    else:
+        logging.warning("The search geometry is not totally contained in one product")
+        area_zone = search_geometry.area
+        product_to_keep = []
+        for product in search_results:
+            coverage_zone = 100*product.geometry.intersection(search_geometry).area/area_zone
+
+            if coverage_zone > 95:
+                product_to_keep.append(product)
+
+        filter_results = SearchResult(products=product_to_keep)
+
         logging.info('Filter results overlapped are : %s with size of %s',
                      filter_results,
                      len(filter_results))
         logging.info('There was %s products before filtering overlapping there are %s now',
                      len(search_results), len(filter_results))
 
-        recent = max([eo.properties['modificationDate'] for eo in filter_results]).split('T')[0]
+    recent = max([eo.properties['modificationDate'] for eo in filter_results]).split('T')[0]
 
-        middle = datetime.datetime.strptime(recent, '%Y-%m-%d').date() - datetime.timedelta(days=10)
-        filter_results_date = filter_results.crunch(
-            FilterDate({'start': str(middle), 'end':str(recent)}))
-        final_img, too_cloudy = lim_cloudcover(filter_results_date)
+    middle = datetime.datetime.strptime(recent, '%Y-%m-%d').date() - datetime.timedelta(days=10)
+    filter_results_date = filter_results.crunch(
+        FilterDate({'start': str(middle), 'end':str(recent)}))
 
-        if not too_cloudy:
-            out_path = dag.download(product=final_img, outputs_prefix=outdir)
-        else:
-            final_img, _ = lim_cloudcover(filter_results_date)
-            out_path = dag.download(product=final_img, outputs_prefix=outdir)
+    final_img, too_cloudy = lim_cloudcover(filter_results_date)
 
-        if 'quicklook' in final_img.properties.keys():
-            quicklook_img(outdir, [final_img], 1)
-
-        final_date = final_img.properties['modificationDate']
-        final_cc = round(final_img.properties['cloudCover'], ndigits=2)
-
-        logging.info("Final product at date %s with cloudcover of %s", final_date, final_cc)
+    if not too_cloudy:
+        out_path = dag.download(product=final_img, outputs_prefix=outdir)
     else:
-        raise ValueError(f"The zone is not contained in one product")
+        final_img, _ = lim_cloudcover(filter_results)
+        out_path = dag.download(product=final_img, outputs_prefix=outdir)
+
+    if 'quicklook' in final_img.properties.keys():
+        quicklook_img(outdir, [final_img], 1)
+
+    final_date = final_img.properties['modificationDate']
+    final_cc = round(final_img.properties['cloudCover'], ndigits=2)
+
+    logging.info("Final product at date %s with cloudcover of %s", final_date, final_cc)
 
     return out_path
-
 
 def cropzone(zone, new_crop, out_path):
     """
