@@ -24,7 +24,7 @@ setup(
         'requests<3',
         'rioxarray==0.13.4',
         'scipy==1.9.1',
-        'Shapely==2.0.1',
+        'Shapely>=1.7',
         'tqdm==4.64.1',
         'urllib3==1.25.8',
         'xarray==2023.1.0',

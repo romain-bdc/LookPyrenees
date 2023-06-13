@@ -170,7 +170,7 @@ def filter_img(search_results, dag, new_crop, outdir):
     if not too_cloudy:
         out_path = dag.download(product=final_img, outputs_prefix=outdir)
     else:
-        final_img, _ = lim_cloudcover(filter_results_date)
+        final_img, _ = lim_cloudcover(filter_results)
         out_path = dag.download(product=final_img, outputs_prefix=outdir)
 
     if 'quicklook' in final_img.properties.keys():
