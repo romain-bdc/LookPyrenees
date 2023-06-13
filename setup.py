@@ -19,7 +19,7 @@ setup(
         'matplotlib==3.7.1',
         'pandas==1.4.4',
         'python-dateutil<2.9',
-        'protobuf==3.20.0',
+        'protobuf==3.20.2',
         'rasterio==1.3.6',
         'requests<3',
         'rioxarray==0.13.4',
