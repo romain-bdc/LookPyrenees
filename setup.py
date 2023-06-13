@@ -26,7 +26,7 @@ setup(
         'scipy==1.9.1',
         'Shapely>=1.7',
         'tqdm==4.64.1',
-        'urllib3==1.25.8',
+        'urllib3==1.26.5',
         'xarray==2023.1.0',
     ],
     entry_points={
