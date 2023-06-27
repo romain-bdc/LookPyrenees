@@ -20,6 +20,7 @@ setup(
         "isort>=5.8.0",
         "matplotlib==3.7.1",
         "pandas==1.4.4",
+        "pylint>=2.13.6",
         "python-dateutil<2.9",
         "pre-commit",
         "protobuf==3.20.2",
