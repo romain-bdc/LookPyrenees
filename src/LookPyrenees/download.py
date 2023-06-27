@@ -165,6 +165,10 @@ def filter_img(search_results, dag, new_crop, outdir):
     filter_results_date = filter_results.crunch(
         FilterDate({'start': str(middle), 'end':str(recent)}))
 
+    # Display cloudcover of images of the last month
+    for eoprod in filter_results:
+        logging.info("Filter product id %s with cloudcover of %s", eoprod.properties['id'], eoprod.properties['cloudCover'])
+
     final_img, too_cloudy = lim_cloudcover(filter_results_date)
 
     if not too_cloudy:
