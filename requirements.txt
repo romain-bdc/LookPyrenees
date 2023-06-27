@@ -76,7 +76,7 @@ platformdirs==3.5.1
 ply==3.11
 pre-commit
 prompt-toolkit==3.0.38
-protobuf==3.20.0
+protobuf==3.20.2
 psutil==5.9.5
 ptyprocess==0.7.0
 pure-eval==0.2.2
