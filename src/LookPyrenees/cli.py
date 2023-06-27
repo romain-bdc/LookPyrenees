@@ -1,8 +1,8 @@
 """CLI to run LookPyrenees module"""
 import argparse
 import logging
-from pathlib import Path
 import sys
+from pathlib import Path
 
 from LookPyrenees.download import process
 
@@ -22,10 +22,14 @@ def parse_args(args):
     Returns:
       :obj:`argparse.Namespace`: command line parameters namespace
     """
-    parser = argparse.ArgumentParser(description="Workflow that download last images of Pyrenees")
+    parser = argparse.ArgumentParser(
+        description="Workflow that download last images of Pyrenees"
+    )
 
     parser.add_argument(dest="zone", help="zone of Pyrenees to view", type=str)
-    parser.add_argument(dest='out_path', help='Output dirpath to store Pyrenees image', type=Path)
+    parser.add_argument(
+        dest="out_path", help="Output dirpath to store Pyrenees image", type=Path
+    )
 
     parser.add_argument(
         "-p",
@@ -33,7 +37,7 @@ def parse_args(args):
         dest="pref_provider",
         help="Select preferred provider",
         type=str,
-        default='cop_dataspace',
+        default="cop_dataspace",
     )
     parser.add_argument(
         "-s",
@@ -44,9 +48,8 @@ def parse_args(args):
         default=False,
     )
     parser.add_argument(
-        "--version",
-        action="version",
-        version=f"Look Pyrenees version : {__version__}")
+        "--version", action="version", version=f"Look Pyrenees version : {__version__}"
+    )
 
     parser.add_argument(
         "-v",
@@ -79,6 +82,7 @@ def setup_logging(loglevel):
         level=loglevel, stream=sys.stdout, format=logformat, datefmt="%Y-%m-%d %H:%M:%S"
     )
 
+
 def main(args):
     """Download and crop area of interest of pyrenees to monitor snow
 
@@ -89,16 +93,18 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
 
-    process(zone=args.zone,
-            outdir=args.out_path,
-            pref_provider=args.pref_provider,
-            plot_res=args.plot_results,
-            )
+    process(
+        zone=args.zone,
+        outdir=args.out_path,
+        pref_provider=args.pref_provider,
+        plot_res=args.plot_results,
+    )
+
 
 def run():
-    """Calls :func:`main` passing the CLI arguments extracted from :obj:`sys.argv`
-    """
+    """Calls :func:`main` passing the CLI arguments extracted from :obj:`sys.argv`"""
     main(sys.argv[1:])
+
 
 if __name__ == "__main__":
     run()

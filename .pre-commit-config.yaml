@@ -8,13 +8,6 @@ repos:
     entry: isort --profile black
     types: [python]
 
-  - id: black
-    name: Black
-    stages: [commit]
-    language: system
-    entry: black
-    types: [python]
-
   - id: flake8
     name: Flake8
     stages: [commit]
