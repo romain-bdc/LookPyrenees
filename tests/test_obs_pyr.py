@@ -10,7 +10,13 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from eodag import EODataAccessGateway
 
-from LookPyrenees.download import cropzone, filter_img, process, search_data
+from LookPyrenees.download import (
+    check_old_files,
+    cropzone,
+    filter_img,
+    process,
+    search_data,
+)
 
 
 class TestClassifBase(unittest.TestCase):
@@ -61,6 +67,10 @@ class TestClassifBase(unittest.TestCase):
         img = mpimg.imread(file_path)
         plt.imshow(img)
         plt.show()
+
+    def test_check_old_files(self):
+        """Test deleting old directories and files"""
+        check_old_files(self.path)
 
     def test_process(self):
         """Test whole process for rulhe_nerassol zone"""
