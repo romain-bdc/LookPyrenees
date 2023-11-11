@@ -4,6 +4,8 @@ import datetime
 import glob
 import logging
 import os
+import shutil
+from pathlib import Path
 
 import folium
 import geopandas as gpd
@@ -245,6 +247,27 @@ def cropzone(zone, new_crop, out_path):
     return path_to_tif_file
 
 
+def check_old_files(outdir):
+    """
+    Check the date of images downloaded and delete too old files
+    """
+
+    min_date = datetime.date.today() - datetime.timedelta(days=31)
+    files_list = os.listdir(outdir)
+
+    for obj in files_list:
+        path_obj = Path(outdir, obj)
+
+        if os.path.isfile(str(path_obj)) and obj.endswith('.tif'):
+            date_file = obj.split('_')[1].split('T')[0]
+            if datetime.datetime.strptime(date_file, "%Y%m%d").date() < min_date:
+                os.remove(path_obj)
+        elif os.path.isdir(str(path_obj)) and obj.startswith("S2"):
+            date_dir = obj.split('_')[2].split('T')[0]
+            if datetime.datetime.strptime(date_dir, "%Y%m%d").date() < min_date:
+                shutil.rmtree(path_obj)
+
+
 def process(zone, outdir, pref_provider, plot_res):
     """
     Process search, filter and crop final EO product
@@ -261,9 +284,12 @@ def process(zone, outdir, pref_provider, plot_res):
 
     new_crop = gpd.read_file(aoi_path[0], mask=crop_extent[crop_extent.NAME == zone])
 
-    print(f"There are {len(search_results)} products")
+    # logging.INFO(f"There are {len(search_results)} products")
 
     out_path = filter_img(search_results, dag, new_crop, outdir)
+
+    check_old_files(outdir)
+
     file_path = cropzone(zone, new_crop, out_path)
 
     return file_path

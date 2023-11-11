@@ -10,6 +10,7 @@ __author__ = "Romain Buguet de Chargère"
 __copyright__ = "Romain Buguet de Chargère"
 __version__ = "0.0.1"
 
+ALL_ZONES = ["3seigneurs", "carlit", "orlu", "rulhe_nerassol"]
 
 # ---- CLI ----
 def parse_args(args):
@@ -26,9 +27,19 @@ def parse_args(args):
         description="Workflow that download last images of Pyrenees"
     )
 
-    parser.add_argument(dest="zone", help="zone of Pyrenees to view", type=str)
+    parser.add_argument("-z",
+                        "--zone",
+                        dest="zone",
+                        help="zone of Pyrenees to view, if no specified download all zones",
+                        type=str,
+                        default="all")
+
     parser.add_argument(
-        dest="out_path", help="Output dirpath to store Pyrenees image", type=Path
+        "-o",
+        "--out-path",
+        dest="out_path",
+        help="Output dirpath to store Pyrenees image",
+        type=Path
     )
 
     parser.add_argument(
@@ -93,13 +104,22 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
 
-    process(
-        zone=args.zone,
-        outdir=args.out_path,
-        pref_provider=args.pref_provider,
-        plot_res=args.plot_results,
-    )
-
+    if args.zone == "all":
+        zones_list = ALL_ZONES
+    else:
+        zones_list = [args.zone]
+        
+    for zone in zones_list:
+        
+        #logging.INFO(f"Downloading {zone} zone")
+        
+        process(
+            zone=zone,
+            outdir=args.out_path,
+            pref_provider=args.pref_provider,
+            plot_res=args.plot_results,
+        )
+        
 
 def run():
     """Calls :func:`main` passing the CLI arguments extracted from :obj:`sys.argv`"""
