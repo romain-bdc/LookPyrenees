@@ -284,7 +284,7 @@ def process(zone, outdir, pref_provider, plot_res):
 
     new_crop = gpd.read_file(aoi_path[0], mask=crop_extent[crop_extent.NAME == zone])
 
-    print(f"There are {len(search_results)} products")
+    # logging.INFO(f"There are {len(search_results)} products")
 
     out_path = filter_img(search_results, dag, new_crop, outdir)
 
