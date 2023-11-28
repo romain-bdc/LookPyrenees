@@ -12,6 +12,7 @@ __version__ = "0.0.1"
 
 ALL_ZONES = ["3seigneurs", "carlit", "orlu", "rulhe_nerassol"]
 
+
 # ---- CLI ----
 def parse_args(args):
     """Parse command line parameters
@@ -39,7 +40,8 @@ def parse_args(args):
         "--out-path",
         dest="out_path",
         help="Output dirpath to store Pyrenees image",
-        type=Path
+        type=Path,
+        default="./data"
     )
 
     parser.add_argument(
@@ -108,18 +110,18 @@ def main(args):
         zones_list = ALL_ZONES
     else:
         zones_list = [args.zone]
-        
+
     for zone in zones_list:
-        
-        #logging.INFO(f"Downloading {zone} zone")
-        
+
+        logging.info(f"Downloading {zone} zone")
+
         process(
             zone=zone,
             outdir=args.out_path,
             pref_provider=args.pref_provider,
             plot_res=args.plot_results,
         )
-        
+
 
 def run():
     """Calls :func:`main` passing the CLI arguments extracted from :obj:`sys.argv`"""
