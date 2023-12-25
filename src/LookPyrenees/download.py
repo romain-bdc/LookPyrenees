@@ -254,18 +254,19 @@ def check_old_files(outdir):
 
     min_date = datetime.date.today() - datetime.timedelta(days=31)
     files_list = os.listdir(outdir)
+    logging.info(f"la taille des fichiers {len(files_list)} et elle vaut {files_list}")
+    if len(files_list)!=0:
+        for obj in files_list:
+            path_obj = Path(outdir, obj)
 
-    for obj in files_list:
-        path_obj = Path(outdir, obj)
-
-        if os.path.isfile(str(path_obj)) and obj.endswith('.tif'):
-            date_file = obj.split('_')[1].split('T')[0]
-            if datetime.datetime.strptime(date_file, "%Y%m%d").date() < min_date:
-                os.remove(path_obj)
-        elif os.path.isdir(str(path_obj)) and obj.startswith("S2"):
-            date_dir = obj.split('_')[2].split('T')[0]
-            if datetime.datetime.strptime(date_dir, "%Y%m%d").date() < min_date:
-                shutil.rmtree(path_obj)
+            if os.path.isfile(str(path_obj)) and obj.endswith('.tif'):
+                date_file = obj.split('_')[1].split('T')[0]
+                if datetime.datetime.strptime(date_file, "%Y%m%d").date() < min_date:
+                    os.remove(path_obj)
+            elif os.path.isdir(str(path_obj)) and obj.startswith("S2"):
+                date_dir = obj.split('_')[2].split('T')[0]
+                if datetime.datetime.strptime(date_dir, "%Y%m%d").date() < min_date:
+                    shutil.rmtree(path_obj)
 
 
 def process(zone, outdir, pref_provider, plot_res):

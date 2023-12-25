@@ -14,14 +14,16 @@ WORKDIR /app
 COPY . /app
 
 RUN adduser user_lp && chown -R user_lp /app
+RUN passwd -d user_lp
 
 USER user_lp
 
 ENV PATH="/home/user_lp/.local/bin:${PATH}"
 # Install pip requirements
 COPY requirements.txt /app/
-RUN pip install --upgrade pip
+RUN python -m pip install --upgrade pip
 RUN python -m pip install -r requirements.txt
 RUN pip install .
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-#CMD ["LookPyrenees", "3seigneurs", "/app/output"]
+CMD ["LookPyrenees"]
+# , "3seigneurs", "/app/output"]

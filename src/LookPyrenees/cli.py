@@ -39,7 +39,8 @@ def parse_args(args):
         "--out-path",
         dest="out_path",
         help="Output dirpath to store Pyrenees image",
-        type=Path
+        type=Path,
+        default="data/"
     )
 
     parser.add_argument(
