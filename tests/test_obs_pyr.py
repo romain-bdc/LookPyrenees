@@ -9,6 +9,7 @@ import geopandas as gpd
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from eodag import EODataAccessGateway
+import logging
 
 from LookPyrenees.download import (
     check_old_files,
@@ -17,6 +18,7 @@ from LookPyrenees.download import (
     process,
     search_data,
 )
+from LookPyrenees.load_gcs import upload_image
 
 
 class TestClassifBase(unittest.TestCase):
@@ -81,3 +83,11 @@ class TestClassifBase(unittest.TestCase):
         img = mpimg.imread(file_path)
         plt.imshow(img)
         plt.show()
+
+    def test_upload_file(self):
+        """Unit test to write new images on bucket"""
+        image_test = f"{os.getcwd()}/ressources/test.txt"
+        print(image_test)
+        bucket_name = "pyrenees_images"
+        exist = upload_image(bucket_name, image_test)
+        logging.info("The file already exists ? %s", exist)

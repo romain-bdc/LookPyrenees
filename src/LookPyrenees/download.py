@@ -1,4 +1,4 @@
-"""This module allow to search, crop and download zone of PYrenees"""
+"""This module allow to search, crop and download zone of Pyrenees"""
 # pylint: disable=import-error
 import datetime
 import glob
@@ -277,6 +277,7 @@ def process(zone, outdir, pref_provider, plot_res):
     search_results = search_data(outdir, dag, pref_provider, plot_res)
     aoi_path = glob.glob(f"{os.getcwd()}/ressources/zone_4326.shp")
 
+    logging.info("AOI PATH : %s", aoi_path)
     crop_extent = gpd.read_file(aoi_path[0])
 
     list_zone = crop_extent.NAME.to_list()
