@@ -14,10 +14,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import rasterio as rio
 import rioxarray as rxr
-from eodag import EODataAccessGateway, setup_logging
 from eodag.api.search_result import SearchResult
 from eodag.crunch import FilterDate, FilterOverlap
 from shapely.geometry import mapping
+
+from eodag import EODataAccessGateway, setup_logging
 
 setup_logging(2)  # 0: nothing, 1: only progress bars, 2: INFO, 3: DEBUG
 logging.basicConfig()
@@ -184,11 +185,15 @@ def filter_img(search_results, dag, new_crop, outdir):
         "T"
     )[0]
 
+    recent_up = datetime.datetime.strptime(recent, "%Y-%m-%d").date() + datetime.timedelta(
+        days=1
+    )
+
     middle = datetime.datetime.strptime(recent, "%Y-%m-%d").date() - datetime.timedelta(
         days=10
     )
     filter_results_date = filter_results.crunch(
-        FilterDate({"start": str(middle), "end": str(recent)})
+        FilterDate({"start": str(middle), "end": str(recent_up)})
     )
 
     # Display cloudcover of images of the last month
@@ -255,7 +260,7 @@ def check_old_files(outdir):
     min_date = datetime.date.today() - datetime.timedelta(days=31)
     files_list = os.listdir(outdir)
     logging.info(f"la taille des fichiers {len(files_list)} et elle vaut {files_list}")
-    if len(files_list)!=0:
+    if len(files_list) != 0:
         for obj in files_list:
             path_obj = Path(outdir, obj)
 
