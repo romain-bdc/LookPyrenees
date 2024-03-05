@@ -45,13 +45,11 @@ jobs:
         pip install build
         python -m build
 
-on:
-  push:
-    branches: [ main ]
 jobs:
   build-push-gcr:
     name: Build and Push to GCP
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'  # Only runs on main branch
     env:
       IMAGE_NAME: lookpyr
       PROJECT_ID: lookpyrenees
