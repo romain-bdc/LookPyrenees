@@ -45,19 +45,37 @@ jobs:
         pip install build
         python -m build
 
-  # release-python:
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build-push-gcr:
+    name: Build and Push to GCP
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: lookpyr
+      PROJECT_ID: lookpyrenees
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
 
-  #   runs-on: ubuntu-latest
-  #   if: startsWith(github.ref, 'refs/tags/')
-  #   needs: check-python
+    - uses: google-github-actions/setup-gcloud@master
+      with:
+        service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        project_id: ${{ env.PROJECT_ID }}
+        export_default_credentials: true
 
-  #   steps:
+    - name: Build Docker Image
+      run: docker build -t $IMAGE_NAME:latest .
 
-  #   - name: Release
-  #     uses: softprops/action-gh-release@v0.1.15
-  #     if: startsWith(github.ref, 'refs/tags/')
-  #     with:
-  #       prerelease: false
-  #       files: |
-  #         dist/LookPyrenees-*.whl
-  #         dist/LookPyrenees-*.tar.gz
+    - name: Configure Docker Client
+      run: gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
+
+    - name: Push Docker Image to Artifact Registry
+      env:
+        GIT_TAG: v0.1
+      run: |-
+        docker tag $IMAGE_NAME:latest europe-west1-docker.pkg.dev/$PROJECT_ID/images/$IMAGE_NAME:latest
+        docker tag $IMAGE_NAME:latest europe-west1-docker.pkg.dev/$PROJECT_ID/images/$IMAGE_NAME:$GIT_TAG
+        docker push europe-west1-docker.pkg.dev/$PROJECT_ID/images/$IMAGE_NAME:latest
+        docker push europe-west1-docker.pkg.dev/$PROJECT_ID/images/$IMAGE_NAME:$GIT_TAG
