@@ -58,9 +58,9 @@ jobs:
 
     - uses: google-github-actions/auth@v1
       with:
-        service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        service_account_key: ${{ secrets.SERVICE_ACCOUNT }}
         project_id: ${{ env.PROJECT_ID }}
-        export_default_credentials: true
+        export_environment_variables: true
 
     - name: Build Docker Image
       run: docker build -t $IMAGE_NAME:latest .
