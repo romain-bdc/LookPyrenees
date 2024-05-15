@@ -15,7 +15,7 @@ import numpy as np
 import rasterio as rio
 import rioxarray as rxr
 from eodag.api.search_result import SearchResult
-from eodag.crunch import FilterDate, FilterOverlap
+from eodag.crunch import FilterDate, FilterOverlap, FilterProperty
 from shapely.geometry import mapping
 
 from eodag import EODataAccessGateway, setup_logging
@@ -128,20 +128,17 @@ def quicklook_img(workspace, search_results, total_count):
     plt.show()
 
 
-def lim_cloudcover(filtered_img):
+def lim_cloudcover(filtered_img, lim_cloudcover: float = 20.0):
     """
     Return the minimum cloudcover on EOproducts list
     """
-    cloud_cover = 100
     too_cloudy = False
-    for img in filtered_img:
-        if img.properties["cloudCover"] < cloud_cover:
-            final_img = img
-            cloud_cover = img.properties["cloudCover"]
-    if cloud_cover > 30:
+    finals_img = filtered_img.crunch(FilterProperty(dict(cloudCover=lim_cloudcover, operator="lt")))
+
+    if len(finals_img) == 0:
         too_cloudy = True
 
-    return final_img, too_cloudy
+    return finals_img, too_cloudy
 
 
 def filter_img(search_results, dag, new_crop, outdir):
@@ -204,23 +201,24 @@ def filter_img(search_results, dag, new_crop, outdir):
             eoprod.properties["cloudCover"],
         )
 
-    final_img, too_cloudy = lim_cloudcover(filter_results_date)
+    finals_img, too_cloudy = lim_cloudcover(filter_results_date)
 
     if not too_cloudy:
-        out_path = dag.download(product=final_img, outputs_prefix=outdir)
+        out_paths = dag.download_all(search_result=finals_img, outputs_prefix=outdir)
     else:
-        final_img, _ = lim_cloudcover(filter_results)
-        out_path = dag.download(product=final_img, outputs_prefix=outdir)
+        finals_img, _ = lim_cloudcover(filter_results)
+        out_paths = dag.download_all(search_result=finals_img, outputs_prefix=outdir)
 
-    if "quicklook" in final_img.properties.keys():
-        quicklook_img(outdir, [final_img], 1)
+    for img in finals_img:
+        if "quicklook" in img.properties.keys():
+            quicklook_img(outdir, [img], 1)
 
-    final_date = final_img.properties["modificationDate"]
-    final_cc = round(final_img.properties["cloudCover"], ndigits=2)
+        final_date = img.properties["modificationDate"]
+        final_cc = round(img.properties["cloudCover"], ndigits=2)
 
-    logging.info("Final product at date %s with cloudcover of %s", final_date, final_cc)
+        logging.info("Final product at date %s with cloudcover of %s", final_date, final_cc)
 
-    return out_path
+    return out_paths
 
 
 def cropzone(zone, new_crop, out_path):
@@ -293,10 +291,10 @@ def process(zone, outdir, pref_provider, plot_res):
 
     # logging.INFO(f"There are {len(search_results)} products")
 
-    out_path = filter_img(search_results, dag, new_crop, outdir)
+    out_paths = filter_img(search_results, dag, new_crop, outdir)
 
     check_old_files(outdir)
 
-    file_path = cropzone(zone, new_crop, out_path)
+    file_path = [cropzone(zone, new_crop, out_path) for out_path in out_paths]
 
     return file_path
