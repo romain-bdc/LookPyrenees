@@ -3,7 +3,7 @@
 import logging
 import os
 
-from google.cloud import storage
+from google.cloud import storage  # type: ignore
 
 CREDS = os.environ.get("CREDS_PATH", "/creds/")
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = CREDS

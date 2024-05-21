@@ -40,6 +40,10 @@ class TestClassifBase(unittest.TestCase):
 
     def test_filter_img(self):
         """Test the filtering of Montcalm zone"""
+
+        os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME")
+        os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__PASSWORD")
+
         zone = "carlit"
         dag = EODataAccessGateway()
         search_results = search_data(
@@ -57,6 +61,9 @@ class TestClassifBase(unittest.TestCase):
 
     def test_cropzone(self):
         """Test cropping of Montcalm zone"""
+
+        os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME")
+        os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__PASSWORD")
         zone = "montcalm"
         dag = EODataAccessGateway()
         search_results = search_data(
@@ -65,12 +72,14 @@ class TestClassifBase(unittest.TestCase):
         aoi_path = glob.glob(f"{os.getcwd()}/ressources/zone_4326.shp")
         crop_extent = gpd.read_file(aoi_path[0])
         crop = gpd.read_file(aoi_path[0], mask=crop_extent[crop_extent.NAME == zone])
-        out_path = filter_img(search_results, dag, crop, self.path)
+        out_paths = filter_img(search_results, dag, crop, self.path)
 
-        file_path = cropzone(zone, crop, out_path)
-        img = mpimg.imread(file_path)
-        plt.imshow(img)
-        plt.show()
+        for out_path in out_paths:
+            file_path = cropzone(zone, crop, out_path)
+            img = mpimg.imread(file_path)
+            plt.imshow(img)
+            plt.show()
+            plt.clf()
 
     def test_check_old_files(self):
         """Test deleting old directories and files"""
@@ -78,13 +87,18 @@ class TestClassifBase(unittest.TestCase):
 
     def test_process(self):
         """Test whole process for rulhe_nerassol zone"""
+        os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME")
+        os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__PASSWORD")
         zone = "rulhe_nerassol"
-        file_path = process(
+        files_path = process(
             zone=zone, outdir=self.path, pref_provider="cop_dataspace", plot_res=False
         )
-        img = mpimg.imread(file_path)
-        plt.imshow(img)
-        plt.show()
+
+        for file_path in files_path:
+            img = mpimg.imread(file_path)
+            plt.imshow(img)
+            plt.show()
+            plt.clf()
 
     def test_upload_and_remove_on_gcs(self):
         """Test to upload an image on google cloud storage
