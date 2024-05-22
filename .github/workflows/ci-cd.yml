@@ -61,7 +61,6 @@ jobs:
         pip install -r requirements.txt
     - name: Test with unittest
       run: |
-        pip install unittest
         python -m unittest discover tests/
 
   build-push-gcr:
