@@ -63,6 +63,8 @@ class TestClassifBase(unittest.TestCase):
 
         os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME")
         os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__PASSWORD")
+        print(f"USERNAME: {os.environ.get('EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME')}")
+
         zone = "montcalm"
         dag = EODataAccessGateway()
         search_results = search_data(
@@ -82,6 +84,15 @@ class TestClassifBase(unittest.TestCase):
 
     def test_check_old_files(self):
         """Test deleting old directories and files"""
+
+        # Obtenir la date du jour au format YYYYMMDD
+        # today = datetime.datetime.now().strftime("%Y%m%d")
+
+        # # Construire le nom du fichier avec la date du jour
+        # filename = f"T31TCH_{today}T105031_TCI_10m_rulhe_nerassol.tif"
+        # file_now = open(f"{filename}.tif", "w")
+        # file_now.close()
+
         check_old_files(self.path)
 
     def test_process(self):
