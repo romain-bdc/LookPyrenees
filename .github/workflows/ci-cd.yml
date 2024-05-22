@@ -38,7 +38,9 @@ jobs:
         mypy src/
 
     - name: Run tests
-      run: python -m unittest discover -s tests
+      run: |
+        pip install .[dev]
+        python -m unittest discover -s tests
 
     - name: Build package
       run: |
