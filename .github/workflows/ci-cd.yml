@@ -45,6 +45,22 @@ jobs:
         pip install build
         python -m build
 
+  tests:
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Test with unittest
+      run: |
+        pip install unittest
+        python -m unittest discover tests/
+
   build-push-gcr:
     name: Build and Push to GCP
     runs-on: ubuntu-latest
