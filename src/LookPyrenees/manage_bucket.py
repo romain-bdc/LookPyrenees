@@ -5,8 +5,9 @@ import os
 
 from google.cloud import storage  # type: ignore
 
-CREDS = os.environ.get("CREDS_PATH", "/creds/")
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = CREDS
+# CREDS = os.environ.get("CREDS_PATH", "/creds/")
+# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = CREDS
+os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "")
 
 
 def load_on_gcs(bucket_name, source_file, destination_blob):

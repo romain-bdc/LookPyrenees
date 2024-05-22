@@ -20,7 +20,6 @@ from LookPyrenees.download import (
 from LookPyrenees.manage_bucket import delete_blob, load_on_gcs
 
 CURRENT_DIR = os.getcwd()
-CREDS = os.environ.get("CREDS_PATH", "creds/")
 
 
 class TestClassifBase(unittest.TestCase):
@@ -103,8 +102,6 @@ class TestClassifBase(unittest.TestCase):
     def test_upload_and_remove_on_gcs(self):
         """Test to upload an image on google cloud storage
         """
-        print(f"CREDENTIALS PATH: {CREDS}")
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = CREDS
 
         file_to_upload = os.path.join(CURRENT_DIR, "tests", "examples", "T31TDH_20240421T103629_TCI_10m_orlu.tif")
         bucket_name = "pyrenees_images"
