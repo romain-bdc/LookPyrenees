@@ -63,7 +63,6 @@ class TestClassifBase(unittest.TestCase):
 
         os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME")
         os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__PASSWORD")
-        print(f"USERNAME: {os.environ.get('EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME')}")
 
         zone = "montcalm"
         dag = EODataAccessGateway()
