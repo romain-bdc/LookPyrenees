@@ -43,6 +43,7 @@ jobs:
         EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME: ${{ secrets.EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME }}
         EODAG__COP_DATASPACE__AUTH__CREDENTIALS__PASSWORD: ${{ secrets.EODAG__COP_DATASPACE__AUTH__CREDENTIALS__PASSWORD }}      
       run: |
+        echo "USERNAME: $EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME"
         pip install .[dev]
         python -m unittest discover -s tests
 
