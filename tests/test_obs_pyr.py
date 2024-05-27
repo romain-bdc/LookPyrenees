@@ -39,7 +39,9 @@ class TestClassifBase(unittest.TestCase):
 
     def test_filter_img(self):
         """Test the filtering of Montcalm zone"""
-
+        user = os.environ.get('EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME')
+        print(f"ENV VARIABLE IS NOT NONE: {user is not None}")
+        print(f"USER VALUE : {user}")
         os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME")
         os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__PASSWORD")
 
