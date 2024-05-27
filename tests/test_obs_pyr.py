@@ -93,6 +93,8 @@ class TestClassifBase(unittest.TestCase):
         today = datetime.datetime.now().strftime("%Y%m%d")
 
         path_dir = os.path.join(CURRENT_DIR, "tests", "examples", "check_dates")
+        if not os.path.exists(path_dir):
+            os.mkdir(os.path.join(CURRENT_DIR, "tests", "examples", "check_dates"))
 
         # Build filename with today date
         filename_today = f"T31TCH_{today}T105031_TCI_10m_rulhe_nerassol.tif"
