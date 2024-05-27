@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 """ Test Observatory of Pyrenees"""
 # pylint: disable=import-error
+import datetime
 import glob
+import logging
 import os
+import shutil
 import unittest
 
 import geopandas as gpd
@@ -86,15 +89,40 @@ class TestClassifBase(unittest.TestCase):
     def test_check_old_files(self):
         """Test deleting old directories and files"""
 
-        # Obtenir la date du jour au format YYYYMMDD
-        # today = datetime.datetime.now().strftime("%Y%m%d")
+        # Get today date in format YYYYMMDD
+        today = datetime.datetime.now().strftime("%Y%m%d")
 
-        # # Construire le nom du fichier avec la date du jour
-        # filename = f"T31TCH_{today}T105031_TCI_10m_rulhe_nerassol.tif"
-        # file_now = open(f"{filename}.tif", "w")
-        # file_now.close()
+        path_dir = os.path.join(CURRENT_DIR, "tests", "examples", "check_dates")
 
-        check_old_files(self.path)
+        # Build filename with today date
+        filename_today = f"T31TCH_{today}T105031_TCI_10m_rulhe_nerassol.tif"
+        full_path_today = os.path.join(path_dir, filename_today)
+        file_now = open(full_path_today, "w")
+        file_now.close()
+
+        # Build filename with one month before date
+        one_month = datetime.datetime.now() - datetime.timedelta(days=32)
+        one_month_date = one_month.strftime("%Y%m%d")
+        filename_month_earlier = f"T31TCH_{one_month_date}T105031_TCI_10m_rulhe_nerassol.tif"
+        full_path_one_month = os.path.join(path_dir, filename_month_earlier)
+        file_one_month = open(full_path_one_month, "w")
+        file_one_month.close()
+
+        check_old_files(path_dir)
+
+        # Check that today file still exists
+        assert os.path.exists(full_path_today)
+
+        # Check that old files has been removed
+        assert not os.path.exists(full_path_one_month)
+
+        with os.scandir(path_dir) as entries:
+            for entry in entries:
+                if entry.is_file():
+                    os.unlink(entry.path)
+                else:
+                    shutil.rmtree(entry.path)
+        logging.info("All files and subdirectories deleted successfully.")
 
     def test_process(self):
         """Test whole process for rulhe_nerassol zone"""
