@@ -37,12 +37,13 @@ jobs:
         python -m pip install mypy
         mypy src/
     
-    - name: Set up environment
-      run: echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}" > $HOME/google-credentials.json
+    - name: Decode and set up Google Cloud credentials
+        run: |
+          echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE64 }}" | base64 -d > $HOME/google-credentials.json
 
     - name: Set environment variable
       run: echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/google-credentials.json" >> $GITHUB_ENV
-    
+
     - name: Run tests
       env:
         EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME: ${{ secrets.EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME }}
