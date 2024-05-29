@@ -42,9 +42,6 @@ class TestClassifBase(unittest.TestCase):
 
     def test_filter_img(self):
         """Test the filtering of Montcalm zone"""
-        user = os.environ.get('EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME')
-        print(f"ENV VARIABLE IS NOT NONE: {user is not None}")
-        print(f"USER VALUE : {user}")
         os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME")
         os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__PASSWORD")
 
@@ -144,7 +141,7 @@ class TestClassifBase(unittest.TestCase):
     def test_upload_and_remove_on_gcs(self):
         """Test to upload an image on google cloud storage
         """
-
+        os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
         file_to_upload = os.path.join(CURRENT_DIR, "tests", "examples", "T31TDH_20240421T103629_TCI_10m_orlu.tif")
         bucket_name = "pyrenees_images"
         destination_blob = "T31TDH_20240421T103629_TCI_10m_orlu.tif"

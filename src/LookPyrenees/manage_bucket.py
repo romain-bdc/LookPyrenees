@@ -14,6 +14,7 @@ def load_on_gcs(bucket_name, source_file, destination_blob):
     """
     Upload images to the bucket on Google Cloud Storage (GCS)
     """
+
     # The ID of your GCS bucket
     # bucket_name = "your-bucket-name"
     # The path to your file to upload
