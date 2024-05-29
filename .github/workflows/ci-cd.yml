@@ -38,8 +38,8 @@ jobs:
         mypy src/
     
     - name: Decode and set up Google Cloud credentials
-        run: |
-          echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE64 }}" | base64 -d > $HOME/google-credentials.json
+      run: |
+        echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE64 }}" | base64 -d > $HOME/google-credentials.json
 
     - name: Set environment variable
       run: echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/google-credentials.json" >> $GITHUB_ENV
