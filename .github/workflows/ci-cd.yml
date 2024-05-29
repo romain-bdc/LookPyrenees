@@ -38,10 +38,10 @@ jobs:
         mypy src/
     
     - name: Set up environment
-        run: echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}" > $HOME/google-credentials.json
+      run: echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}" > $HOME/google-credentials.json
 
-      - name: Set environment variable
-        run: echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/google-credentials.json" >> $GITHUB_ENV
+    - name: Set environment variable
+      run: echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/google-credentials.json" >> $GITHUB_ENV
     
     - name: Run tests
       env:
