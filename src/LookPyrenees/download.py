@@ -326,10 +326,9 @@ def process(zone, outdir, pref_provider, plot_res, bucket):
     # If the list is wide we can stop now
     if out_paths:
         file_path = [cropzone(zone, new_crop, out_path) for out_path in out_paths]
+        check_old_files(outdir)
     else:
         file_path = None
         logging.info("All files already exist, no download")
-
-    check_old_files(outdir)
 
     return file_path
