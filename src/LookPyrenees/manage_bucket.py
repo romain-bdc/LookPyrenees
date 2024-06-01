@@ -56,7 +56,7 @@ def delete_blob(bucket_name, blob_name):
         logging.info("File %s does not exists", blob_name)
 
 
-def check_files_on_bucket(bucket_name, name):
+def check_files_on_bucket(bucket_name, name, zone):
     """This function allow to check if an image already exists before download it"""
     # Create a client
     client = storage.Client()
@@ -70,10 +70,11 @@ def check_files_on_bucket(bucket_name, name):
     date = name.split("_")[2].split("T")[0]
     tile = name.split("_")[5]
 
+    matches = [date, tile, zone]
     # Check each blob name for the substring
     if len(blobs) > 0:
         for blob in blobs:
-            if (date and tile) in blob.name:
+            if all(elem in blob.name for elem in matches):
                 return True
 
     return False

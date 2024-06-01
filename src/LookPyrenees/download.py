@@ -275,7 +275,7 @@ def check_old_files(outdir):
                 shutil.rmtree(path_obj)
 
 
-def check_files_in_local(outdir, zone, name):
+def check_files_in_local(outdir, name, zone):
     """As it is done in check_files_in_bucket we check if image already exist in local
     before downloading it"""
 
@@ -287,9 +287,9 @@ def check_files_in_local(outdir, zone, name):
     filenames = [os.path.basename(file) for file in filenames_path]
     for file in filenames:
         if all(elem in file for elem in matches):
-            return False
+            return True
 
-    return True
+    return False
 
 
 def process(zone, outdir, pref_provider, plot_res, bucket):
@@ -316,11 +316,11 @@ def process(zone, outdir, pref_provider, plot_res, bucket):
         name = eoprod.properties["id"]
         if bucket is not None:
             logging.info("Check files on bucket %s", bucket)
-            if check_files_on_bucket(bucket, name):
+            if check_files_on_bucket(bucket, name, zone):
                 out_paths.append(download_img(eoprod, dag, outdir))
         else:
             logging.info("Check files in local directory %s for image %s", outdir, name)
-            if check_files_in_local(outdir, zone, name):
+            if check_files_in_local(outdir, name, zone):
                 out_paths.append(download_img(eoprod, dag, outdir))
 
     # If the list is wide we can stop now

@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 
 from eodag import EODataAccessGateway
 from LookPyrenees.download import (
+    check_files_in_local,
     check_old_files,
     cropzone,
     download_img,
@@ -154,14 +155,39 @@ class TestClassifBase(unittest.TestCase):
         bucket_name = "pyrenees_images"
         destination_blob = "T31TCH_20240511T103629_TCI_10m_rulhe_nerassol.tif"
 
+        zone = "rulhe_nerassol"
         filename = "S2B_MSIL2A_20240511T103629_N0510_R008_T31TCH_20240511T121256"
 
-        exists_before_load = check_files_on_bucket(bucket_name, filename)
+        exists_before_load = check_files_on_bucket(bucket_name, filename, zone)
         assert not exists_before_load
 
         load_on_gcs(bucket_name, file_to_upload, destination_blob)
 
-        exists_after_load = check_files_on_bucket(bucket_name, filename)
+        exists_after_load = check_files_on_bucket(bucket_name, filename, zone)
         assert exists_after_load
 
         delete_blob(bucket_name, destination_blob)
+
+    def test_check_files_in_local(self):
+        """Test the features that check if files already exists in local folder"""
+
+        path_to_check = os.path.join(CURRENT_DIR,
+                                     "tests",
+                                     "examples")
+        zone = "montcalm"
+        product_id = "S2B_MSIL2A_20240511T103629_N0510_R008_T31TCH_20240511T121256"
+        final_tif = "T31TCH_20240511T103629_TCI_10m_montcalm.tif"
+
+        if os.path.exists(os.path.join(path_to_check, final_tif)):
+            os.remove(os.path.join(path_to_check, final_tif))
+
+        exists_before = check_files_in_local(path_to_check, product_id, zone)
+        assert not exists_before
+
+        with open(os.path.join(path_to_check, final_tif), "w", encoding="utf-8") as _:
+            logging.info("File %s has been created", final_tif)
+
+        exists_after = check_files_in_local(path_to_check, product_id, zone)
+        assert exists_after
+
+        os.remove(os.path.join(path_to_check, final_tif))
