@@ -5,8 +5,6 @@ import os
 
 from google.cloud import storage  # type: ignore
 
-# CREDS = os.environ.get("CREDS_PATH", "/creds/")
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = CREDS
 os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "")
 
 
@@ -14,14 +12,6 @@ def load_on_gcs(bucket_name, source_file, destination_blob):
     """
     Upload images to the bucket on Google Cloud Storage (GCS)
     """
-
-    # The ID of your GCS bucket
-    # bucket_name = "your-bucket-name"
-    # The path to your file to upload
-    # source_file = "local/path/to/file"
-    # The ID of your GCS object
-    # destination_blob = "storage-object-name"
-
     storage_client = storage.Client()
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(destination_blob)
@@ -64,3 +54,27 @@ def delete_blob(bucket_name, blob_name):
         logging.info("Blob %s deleted.", blob_name)
     else:
         logging.info("File %s does not exists", blob_name)
+
+
+def check_files_on_bucket(bucket_name, name, zone):
+    """This function allow to check if an image already exists before download it"""
+    # Create a client
+    client = storage.Client()
+
+    # Get the bucket
+    bucket = client.bucket(bucket_name)
+
+    # List all blobs in the bucket
+    blobs = list(client.list_blobs(bucket))
+
+    date = name.split("_")[2].split("T")[0]
+    tile = name.split("_")[5]
+
+    matches = [date, tile, zone]
+    # Check each blob name for the substring
+    if len(blobs) > 0:
+        for blob in blobs:
+            if all(elem in blob.name for elem in matches):
+                return True
+
+    return False

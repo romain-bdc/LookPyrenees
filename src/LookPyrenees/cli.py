@@ -53,6 +53,14 @@ def parse_args(args):
         default="cop_dataspace",
     )
     parser.add_argument(
+        "-b",
+        "--bucket-name",
+        dest="bucket_name",
+        help="Select the bucket name",
+        type=str,
+        default=None,
+    )
+    parser.add_argument(
         "-s",
         "--show-results",
         dest="plot_results",
@@ -120,6 +128,7 @@ def main(args):
             outdir=args.out_path,
             pref_provider=args.pref_provider,
             plot_res=args.plot_results,
+            bucket=args.bucket_name
         )
 
 
