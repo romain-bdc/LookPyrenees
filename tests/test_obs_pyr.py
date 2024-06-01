@@ -16,11 +16,12 @@ from eodag import EODataAccessGateway
 from LookPyrenees.download import (
     check_old_files,
     cropzone,
+    download_img,
     filter_img,
     process,
     search_data,
 )
-from LookPyrenees.manage_bucket import delete_blob, load_on_gcs
+from LookPyrenees.manage_bucket import check_files_on_bucket, delete_blob, load_on_gcs
 
 CURRENT_DIR = os.getcwd()
 
@@ -56,7 +57,7 @@ class TestClassifBase(unittest.TestCase):
         crop = gpd.read_file(aoi_path[0], mask=crop_extent[crop_extent.NAME == zone])
 
         filtered_results = filter_img(
-            search_results=search_results, dag=dag, new_crop=crop, outdir=self.path
+            search_results=search_results, new_crop=crop,
         )
         print(f"filtered_results : {filtered_results}")
 
@@ -74,7 +75,11 @@ class TestClassifBase(unittest.TestCase):
         aoi_path = glob.glob(f"{os.getcwd()}/ressources/zone_4326.shp")
         crop_extent = gpd.read_file(aoi_path[0])
         crop = gpd.read_file(aoi_path[0], mask=crop_extent[crop_extent.NAME == zone])
-        out_paths = filter_img(search_results, dag, crop, self.path)
+        out_imgs = filter_img(search_results, crop)
+
+        out_paths = []
+        for eoprod in out_imgs:
+            out_paths.append(download_img(eoprod, dag, self.path))
 
         for out_path in out_paths:
             file_path = cropzone(zone, crop, out_path)
@@ -96,16 +101,16 @@ class TestClassifBase(unittest.TestCase):
         # Build filename with today date
         filename_today = f"T31TCH_{today}T105031_TCI_10m_rulhe_nerassol.tif"
         full_path_today = os.path.join(path_dir, filename_today)
-        file_now = open(full_path_today, "w")
-        file_now.close()
+        with open(full_path_today, "w", encoding="utf-8") as _:
+            logging.info("File %s has been created", filename_today)
 
         # Build filename with one month before date
         one_month = datetime.datetime.now() - datetime.timedelta(days=32)
         one_month_date = one_month.strftime("%Y%m%d")
         filename_month_earlier = f"T31TCH_{one_month_date}T105031_TCI_10m_rulhe_nerassol.tif"
         full_path_one_month = os.path.join(path_dir, filename_month_earlier)
-        file_one_month = open(full_path_one_month, "w")
-        file_one_month.close()
+        with open(full_path_one_month, "w", encoding="utf-8") as _:
+            logging.info("File %s has been created", full_path_one_month)
 
         check_old_files(path_dir)
 
@@ -129,23 +134,34 @@ class TestClassifBase(unittest.TestCase):
         os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__PASSWORD")
         zone = "rulhe_nerassol"
         files_path = process(
-            zone=zone, outdir=self.path, pref_provider="cop_dataspace", plot_res=False
+            zone=zone, outdir=self.path, pref_provider="cop_dataspace", plot_res=False, bucket=None
         )
-
-        for file_path in files_path:
-            img = mpimg.imread(file_path)
-            plt.imshow(img)
-            plt.show()
-            plt.clf()
+        if files_path:
+            for file_path in files_path:
+                img = mpimg.imread(file_path)
+                plt.imshow(img)
+                plt.show()
+                plt.clf()
 
     def test_upload_and_remove_on_gcs(self):
         """Test to upload an image on google cloud storage
         """
         os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
-        file_to_upload = os.path.join(CURRENT_DIR, "tests", "examples", "T31TDH_20240421T103629_TCI_10m_orlu.tif")
+        file_to_upload = os.path.join(CURRENT_DIR,
+                                      "tests",
+                                      "examples",
+                                      "T31TCH_20240511T103629_TCI_10m_rulhe_nerassol.tif")
         bucket_name = "pyrenees_images"
-        destination_blob = "T31TDH_20240421T103629_TCI_10m_orlu.tif"
+        destination_blob = "T31TCH_20240511T103629_TCI_10m_rulhe_nerassol.tif"
+
+        filename = "S2B_MSIL2A_20240511T103629_N0510_R008_T31TCH_20240511T121256"
+
+        exists_before_load = check_files_on_bucket(bucket_name, filename)
+        assert not exists_before_load
 
         load_on_gcs(bucket_name, file_to_upload, destination_blob)
+
+        exists_after_load = check_files_on_bucket(bucket_name, filename)
+        assert exists_after_load
 
         delete_blob(bucket_name, destination_blob)
