@@ -133,7 +133,7 @@ def filter_cloudcover(filtered_img, lim_cloudcover: float = 20.0):
     Return the minimum cloudcover on EOproducts list
     """
     too_cloudy = False
-    finals_img = filtered_img.crunch(FilterProperty({"cloudCover": lim_cloudcover, "operator": 'lt'}))
+    finals_img = filtered_img.crunch(FilterProperty({"cloudCover": lim_cloudcover, "operator": "lt"}))
 
     if len(finals_img) == 0:
         too_cloudy = True
@@ -316,11 +316,11 @@ def process(zone, outdir, pref_provider, plot_res, bucket):
         name = eoprod.properties["id"]
         if bucket is not None:
             logging.info("Check files on bucket %s", bucket)
-            if check_files_on_bucket(bucket, name, zone):
+            if not check_files_on_bucket(bucket, name, zone):
                 out_paths.append(download_img(eoprod, dag, outdir))
         else:
             logging.info("Check files in local directory %s for image %s", outdir, name)
-            if check_files_in_local(outdir, name, zone):
+            if not check_files_in_local(outdir, name, zone):
                 out_paths.append(download_img(eoprod, dag, outdir))
 
     # If the list is wide we can stop now

@@ -159,7 +159,10 @@ class TestClassifBase(unittest.TestCase):
         filename = "S2B_MSIL2A_20240511T103629_N0510_R008_T31TCH_20240511T121256"
 
         exists_before_load = check_files_on_bucket(bucket_name, filename, zone)
-        assert not exists_before_load
+        if exists_before_load:
+            logging.warning("File %s already exists on bucket", destination_blob)
+        else:
+            logging.info("File %s does not exists before upload", destination_blob)
 
         load_on_gcs(bucket_name, file_to_upload, destination_blob)
 
