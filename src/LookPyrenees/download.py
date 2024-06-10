@@ -19,7 +19,7 @@ from eodag.crunch import FilterDate, FilterOverlap, FilterProperty
 from shapely.geometry import mapping
 
 from eodag import EODataAccessGateway, setup_logging
-from LookPyrenees.manage_bucket import check_files_on_bucket
+from LookPyrenees.manage_bucket import check_files_on_bucket, load_on_gcs
 
 setup_logging(2)  # 0: nothing, 1: only progress bars, 2: INFO, 3: DEBUG
 logging.basicConfig()
@@ -326,7 +326,11 @@ def process(zone, outdir, pref_provider, plot_res, bucket):
     # If the list is wide we can stop now
     if out_paths:
         file_path = [cropzone(zone, new_crop, out_path) for out_path in out_paths]
-        check_old_files(outdir)
+
+        if bucket is not None:
+            for file in file_path:
+                name = file.split("/")[-1]
+                load_on_gcs(bucket, file, name)
     else:
         file_path = None
         logging.info("All files already exist, no download")

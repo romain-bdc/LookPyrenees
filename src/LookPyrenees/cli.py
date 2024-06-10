@@ -4,7 +4,7 @@ import logging
 import sys
 from pathlib import Path
 
-from LookPyrenees.download import process
+from LookPyrenees.download import check_old_files, process
 
 __author__ = "Romain Buguet de Chargère"
 __copyright__ = "Romain Buguet de Chargère"
@@ -130,6 +130,8 @@ def main(args):
             plot_res=args.plot_results,
             bucket=args.bucket_name
         )
+
+    check_old_files(args.out_path)
 
 
 def run():
