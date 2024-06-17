@@ -15,24 +15,26 @@ When installation of packages finished you need to add your credentials account 
 
 ## Run command 
 
-After installation, you can run this command to download a zone of Pyrenees, a compromise is computed between the most recent and the less cloudy image : `python3 src/lookpyrenees/cli.py ZONE OUT_PATH`.
+After installation, you can run this command to download a zone of Pyrenees, a compromise is computed between the most recent and the less cloudy image : `Lookpyrenees -z [ZONE] -o OUT_PATH`.
 
 The list of current zone available (you can find shapefile in **ressources** folder) is : 3seigneurs, montcalm, rulhe_nerassol, carlit, orlu
 
 Right here the command help :
 ```
-usage: cli.py [-h] [-p PREF_PROVIDER] [-s PLOT_RESULTS] [--version] [-v] [-vv] zone out_path
+usage: LookPyrenees [-h] [-z ZONE] [-o OUT_PATH] [-p PREF_PROVIDER] [-b BUCKET_NAME]
+                    [-s PLOT_RESULTS] [--version] [-v] [-vv]
 
 Workflow that download last images of Pyrenees
 
-positional arguments:
-  zone                  zone of Pyrenees to view
-  out_path              Output dirpath to store Pyrenees image
-
 optional arguments:
   -h, --help            show this help message and exit
+  -z ZONE, --zone ZONE  zone of Pyrenees to view, if no specified download all zones
+  -o OUT_PATH, --out-path OUT_PATH
+                        Output dirpath to store Pyrenees image
   -p PREF_PROVIDER, --pref-provider PREF_PROVIDER
                         Select preferred provider
+  -b BUCKET_NAME, --bucket-name BUCKET_NAME
+                        Select the bucket name
   -s PLOT_RESULTS, --show-results PLOT_RESULTS
                         Boolean to view or not search results
   --version             show program's version number and exit
