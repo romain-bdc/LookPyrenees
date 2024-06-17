@@ -42,6 +42,4 @@ optional arguments:
 
 ## To be continued
 - When a zone is exactly between two product it raises an error, the objective is to fix this by merging two products which cover the zone concerned.
-- Create a real cli command : replace `python3 src/lookpyrenees/cli.py [ARGS]` by `LookPyrenees [ARGS]`
-- Add scrip to process L1C image to L2A images (for peps provider for example)
-
+- Add a super resolution algorithm in the workflow in order to imporve the spatial resolution
