@@ -16,6 +16,7 @@ from eodag import EODataAccessGateway
 from LookPyrenees.download import (
     check_files_in_local,
     check_old_files,
+    convert_tiff_to_png,
     cropzone,
     download_img,
     filter_img,
@@ -194,3 +195,16 @@ class TestClassifBase(unittest.TestCase):
         assert exists_after
 
         os.remove(os.path.join(path_to_check, final_tif))
+
+    def test_convert_tiff_to_png(self):
+        """Test conversion of tif file in png file"""
+
+        tif_file = os.path.join(CURRENT_DIR, "tests", "examples", "T31TCH_20240511T103629_TCI_10m_rulhe_nerassol.tif")
+        out_file = os.path.join(CURRENT_DIR, "tests", "examples", "T31TCH_20240511T103629_TCI_10m_rulhe_nerassol.png")
+        convert_tiff_to_png(tif_file, out_file)
+
+        assert os.path.exists(out_file)
+        img = mpimg.imread(out_file)
+        plt.imshow(img)
+        plt.show()
+        plt.clf()
