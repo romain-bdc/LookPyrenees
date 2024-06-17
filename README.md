@@ -1,5 +1,10 @@
 # LookPyrenees 
-This code allow you to download and visualize a zone of pyrenees to prevent snow in winter and summer season.
+This code allow you to download and visualize a zone of pyrenees to monitore snow cover in winter and summer season. You can use it if you want to see where is the snow limit when you do ski touring.
+
+Here is an overview of the global workfow of this project:
+![workflow](https://github.com/romain-bdc/LookPyrenees/assets/78345373/b5ef312c-a5e4-48cd-afeb-a9d11823e980)
+
+
 
 ## Installation
 You need to clone this repository, create an virtual environment `python3 -m venv NAME_OF_YOUR_ENVIRONMENT` and run the following commmand to install requires packages `pip install .` or `python3 setup.py install` 
