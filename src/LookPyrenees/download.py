@@ -351,7 +351,7 @@ def process(zone, outdir, pref_provider, plot_res, bucket):
                 file_png = Path(file).with_suffix('.' + "png")
                 convert_tiff_to_png(file, file_png)
                 name = file.split("/")[-1]
-                load_on_gcs(bucket, file_png, name)
+                load_on_gcs(bucket, str(file_png), name)
     else:
         file_path = None
         logging.info("All files already exist, no download")
