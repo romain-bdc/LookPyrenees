@@ -350,7 +350,7 @@ def process(zone, outdir, pref_provider, plot_res, bucket):
             for file in file_path:
                 file_png = Path(file).with_suffix('.' + "png")
                 convert_tiff_to_png(file, file_png)
-                name = file_png.split("/")[-1]
+                name = file.split("/")[-1]
                 load_on_gcs(bucket, file_png, name)
     else:
         file_path = None
