@@ -293,6 +293,25 @@ def check_files_in_local(outdir, name, zone):
     return False
 
 
+def convert_tiff_to_png(input_tiff_path, output_png_path):
+    """
+    Convert a TIFF file to a PNG file.
+
+    :param input_tiff_path: Path to the input TIFF file.
+    :param output_png_path: Path to save the output PNG file.
+    """
+    tif_name = input_tiff_path.split("/")[-1]
+    try:
+        # Open the input TIFF file
+        with Image.open(input_tiff_path) as img:
+            # Convert image to PNG format
+            img.save(output_png_path, format='PNG')
+        png_name = output_png_path.split("/")[-1]
+        logging.info("Converted %s to %s successfully.", tif_name, png_name)
+    except Exception as e:
+        logging.error("Error converting %s to PNG: %s", tif_name, e)
+
+
 def process(zone, outdir, pref_provider, plot_res, bucket):
     """
     Process search, filter and crop final EO product
@@ -327,32 +346,14 @@ def process(zone, outdir, pref_provider, plot_res, bucket):
     # If the list is wide we can stop now
     if out_paths:
         file_path = [cropzone(zone, new_crop, out_path) for out_path in out_paths]
-
         if bucket is not None:
             for file in file_path:
-                name = file.split("/")[-1]
-                load_on_gcs(bucket, file, name)
+                file_png = Path(file).with_suffix('.' + "png")
+                convert_tiff_to_png(file, file_png)
+                name = file_png.split("/")[-1]
+                load_on_gcs(bucket, file_png, name)
     else:
         file_path = None
         logging.info("All files already exist, no download")
 
     return file_path
-
-
-def convert_tiff_to_png(input_tiff_path, output_png_path):
-    """
-    Convert a TIFF file to a PNG file.
-
-    :param input_tiff_path: Path to the input TIFF file.
-    :param output_png_path: Path to save the output PNG file.
-    """
-    tif_name = input_tiff_path.split("/")[-1]
-    try:
-        # Open the input TIFF file
-        with Image.open(input_tiff_path) as img:
-            # Convert image to PNG format
-            img.save(output_png_path, format='PNG')
-        png_name = output_png_path.split("/")[-1]
-        logging.info("Converted %s to %s successfully.", tif_name, png_name)
-    except Exception as e:
-        logging.error("Error converting %s to PNG: %s", tif_name, e)

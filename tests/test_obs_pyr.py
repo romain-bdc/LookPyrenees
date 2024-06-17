@@ -7,6 +7,7 @@ import logging
 import os
 import shutil
 import unittest
+from pathlib import Path
 
 import geopandas as gpd
 import matplotlib.image as mpimg
@@ -200,7 +201,8 @@ class TestClassifBase(unittest.TestCase):
         """Test conversion of tif file in png file"""
 
         tif_file = os.path.join(CURRENT_DIR, "tests", "examples", "T31TCH_20240511T103629_TCI_10m_rulhe_nerassol.tif")
-        out_file = os.path.join(CURRENT_DIR, "tests", "examples", "T31TCH_20240511T103629_TCI_10m_rulhe_nerassol.png")
+        # out_file = os.path.join(CURRENT_DIR, "tests", "examples", "T31TCH_20240511T103629_TCI_10m_rulhe_nerassol.png")
+        out_file = Path(tif_file).with_suffix('.' + "png")
         convert_tiff_to_png(tif_file, out_file)
 
         assert os.path.exists(out_file)
