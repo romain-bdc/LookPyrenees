@@ -1,5 +1,10 @@
 # LookPyrenees 
-This code allow you to download and visualize a zone of pyrenees to prevent snow in winter and summer season.
+This code allow you to download and visualize a zone of pyrenees to monitore snow cover in winter and summer season. You can use it if you want to see where is the snow limit when you do ski touring.
+
+Here is an overview of the global workfow of this project:
+![workflow](https://github.com/romain-bdc/LookPyrenees/assets/78345373/b5ef312c-a5e4-48cd-afeb-a9d11823e980)
+
+
 
 ## Installation
 You need to clone this repository, create an virtual environment `python3 -m venv NAME_OF_YOUR_ENVIRONMENT` and run the following commmand to install requires packages `pip install .` or `python3 setup.py install` 
@@ -10,24 +15,26 @@ When installation of packages finished you need to add your credentials account 
 
 ## Run command 
 
-After installation, you can run this command to download a zone of Pyrenees, a compromise is computed between the most recent and the less cloudy image : `python3 src/lookpyrenees/cli.py ZONE OUT_PATH`.
+After installation, you can run this command to download a zone of Pyrenees, a compromise is computed between the most recent and the less cloudy image : `Lookpyrenees -z [ZONE] -o OUT_PATH`.
 
 The list of current zone available (you can find shapefile in **ressources** folder) is : 3seigneurs, montcalm, rulhe_nerassol, carlit, orlu
 
 Right here the command help :
 ```
-usage: cli.py [-h] [-p PREF_PROVIDER] [-s PLOT_RESULTS] [--version] [-v] [-vv] zone out_path
+usage: LookPyrenees [-h] [-z ZONE] [-o OUT_PATH] [-p PREF_PROVIDER] [-b BUCKET_NAME]
+                    [-s PLOT_RESULTS] [--version] [-v] [-vv]
 
 Workflow that download last images of Pyrenees
 
-positional arguments:
-  zone                  zone of Pyrenees to view
-  out_path              Output dirpath to store Pyrenees image
-
 optional arguments:
   -h, --help            show this help message and exit
+  -z ZONE, --zone ZONE  zone of Pyrenees to view, if no specified download all zones
+  -o OUT_PATH, --out-path OUT_PATH
+                        Output dirpath to store Pyrenees image
   -p PREF_PROVIDER, --pref-provider PREF_PROVIDER
                         Select preferred provider
+  -b BUCKET_NAME, --bucket-name BUCKET_NAME
+                        Select the bucket name
   -s PLOT_RESULTS, --show-results PLOT_RESULTS
                         Boolean to view or not search results
   --version             show program's version number and exit
@@ -37,6 +44,4 @@ optional arguments:
 
 ## To be continued
 - When a zone is exactly between two product it raises an error, the objective is to fix this by merging two products which cover the zone concerned.
-- Create a real cli command : replace `python3 src/lookpyrenees/cli.py [ARGS]` by `LookPyrenees [ARGS]`
-- Add scrip to process L1C image to L2A images (for peps provider for example)
-
+- Add a super resolution algorithm in the workflow in order to imporve the spatial resolution
