@@ -1,11 +1,19 @@
 # LookPyrenees 
 This code allow you to download and visualize a zone of pyrenees to monitore snow cover in winter and summer season. You can use it if you want to see where is the snow limit when you do ski touring.
 
-<img src="https://github.com/romain-bdc/LookPyrenees/assets/78345373/46617156-535c-438a-b70f-83d0334486b2" alt="drawing" width="300"/>
+Here is an image of Montcalm zone on 05-06-2024
+<p align="left">
+<img src="https://github.com/romain-bdc/LookPyrenees/assets/78345373/46617156-535c-438a-b70f-83d0334486b2" width="300">
+</p>
 
-<img src="https://github.com/romain-bdc/LookPyrenees/assets/78345373/4e9a84a1-ba2a-47b0-82e7-41c0add707b5" alt="drawing" width="430"/>
+Here is an image of Orlu zone on 11-05-2024
+<p align="left">
+<img src="https://github.com/romain-bdc/LookPyrenees/assets/78345373/4e9a84a1-ba2a-47b0-82e7-41c0add707b5" width="400">
+</p>
 
 
+
+Here is a report Looker Studio where you can see all zones observed with most recent images date and with the few clous as possible: 
 [Visualize Pyrenees (Looker Studio report)](https://lookerstudio.google.com/embed/reporting/88692342-37da-4f11-aa67-e6bda7fb67a8/page/Uc62D)
 
 Here is an overview of the global workfow of this project:
