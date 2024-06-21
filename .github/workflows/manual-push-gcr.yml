@@ -3,30 +3,37 @@ name: Manual push to Google Artifact Registry
 on:
   workflow_dispatch:
 
+env:
+  IMAGE_NAME: lookpyr
+  PROJECT_ID: lookpyrenees
+  REGION: europe-west1
+
 jobs:
   build-push-gcr:
     name: Build and Push to GCP
     runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: lookpyr
-      PROJECT_ID: lookpyrenees
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
-    - uses: google-github-actions/auth@v1
+    - id: "auth"
+      uses: "google-github-actions/auth@v1"
       with:
-        service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY}}
-        project_id: ${{ env.PROJECT_ID }}
-        export_environment_variables: true
+        credentials_json: "${{ secrets.SERVICE_ACCOUNT_KEY }}"
 
-    - name: Build Docker Image
-      run: docker build -t $IMAGE_NAME:latest .
+    - name: "Set up Cloud SDK"
+      uses: "google-github-actions/setup-gcloud@v1"
 
-    - name: Configure Docker Client
-      run: gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
+    - name: "Use gcloud CLI"
+      run: "gcloud info"
 
-    - name: Push Docker Image to Artifact Registry
+    - name: "Docker auth"
       run: |-
-        docker tag $IMAGE_NAME:latest europe-west1-docker.pkg.dev/$PROJECT_ID/images/$IMAGE_NAME:latest
-        docker push europe-west1-docker.pkg.dev/$PROJECT_ID/images/$IMAGE_NAME:latest
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+    - name: Build image
+      run: docker build . --tag ${{env.REGION}}-docker.pkg.dev/${{env.PROJECT_ID}}/images/${{env.IMAGE_NAME}}:latest
+      working-directory: .
+
+    - name: Push image
+      run: docker push ${{env.REGION}}-docker.pkg.dev/${{env.PROJECT_ID}}/images/${{env.IMAGE_NAME}}:latest
