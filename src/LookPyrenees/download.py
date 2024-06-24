@@ -179,19 +179,11 @@ def filter_img(search_results, new_crop):
             len(filter_results),
         )
 
-    recent = max([eo.properties["modificationDate"] for eo in filter_results]).split(
-        "T"
-    )[0]
+    today = datetime.datetime.today()
+    middle = today - datetime.timedelta(days=10)
 
-    recent_up = datetime.datetime.strptime(recent, "%Y-%m-%d").date() + datetime.timedelta(
-        days=1
-    )
-
-    middle = datetime.datetime.strptime(recent, "%Y-%m-%d").date() - datetime.timedelta(
-        days=10
-    )
     filter_results_date = filter_results.crunch(
-        FilterDate({"start": str(middle), "end": str(recent_up)})
+        FilterDate({"start": str(middle), "end": str(today)})
     )
 
     # Display cloudcover of images of the last month
@@ -305,7 +297,7 @@ def convert_tiff_to_png(input_tiff_path, output_png_path):
         # Open the input TIFF file
         with Image.open(input_tiff_path) as img:
             # Convert image to PNG format
-            img.save(output_png_path, format='PNG')
+            img.save(output_png_path, format="PNG")
         png_name = output_png_path.split("/")[-1]
         logging.info("Converted %s to %s successfully.", tif_name, png_name)
     except Exception as e:
@@ -346,11 +338,15 @@ def process(zone, outdir, pref_provider, plot_res, bucket):
     # If the list is wide we can stop now
     if out_paths:
         file_path = [cropzone(zone, new_crop, out_path) for out_path in out_paths]
-        if bucket is not None:
-            for file in file_path:
-                file_png = Path(file).with_suffix('.' + "png")
-                convert_tiff_to_png(file, file_png)
-                name = file.split("/")[-1]
+
+        for file in file_path:
+            name = file.split("/")[-1]
+            file_png = Path(file).with_suffix("." + "png")
+            convert_tiff_to_png(file, str(file_png))
+            os.remove(file)
+            logging.info("Deleted %s sucessfully.", name)
+
+            if bucket is not None:
                 load_on_gcs(bucket, str(file_png), name)
     else:
         file_path = None

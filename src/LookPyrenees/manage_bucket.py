@@ -28,7 +28,7 @@ def load_on_gcs(bucket_name, source_file, destination_blob):
     filename = source_file.split("/")[-1]
     if not stats:
         blob.upload_from_filename(source_file, if_generation_match=generation_match_precondition)
-        logging.info("File %s uploaded to %s.", filename, destination_blob)
+        logging.info("File %s uploaded to bucket %s.", filename, bucket_name)
     else:
         logging.info("File %s already exists", destination_blob)
 
