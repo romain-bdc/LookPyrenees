@@ -136,12 +136,13 @@ class TestClassifBase(unittest.TestCase):
         os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME")
         os.environ.get("EODAG__COP_DATASPACE__AUTH__CREDENTIALS__PASSWORD")
         zone = "rulhe_nerassol"
-        files_path = process(
+        _ = process(
             zone=zone, outdir=self.path, pref_provider="cop_dataspace", plot_res=False, bucket=None
         )
-        if files_path:
-            for file_path in files_path:
-                img = mpimg.imread(file_path)
+        png_images = glob.glob(f"{self.path}/*.png")
+        if len(png_images) > 0:
+            for png_image in png_images:
+                img = mpimg.imread(png_image)
                 plt.imshow(img)
                 plt.show()
                 plt.clf()
