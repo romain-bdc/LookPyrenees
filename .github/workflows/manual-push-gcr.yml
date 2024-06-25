@@ -37,3 +37,27 @@ jobs:
 
     - name: Push image
       run: docker push ${{env.REGION}}-docker.pkg.dev/${{env.PROJECT_ID}}/images/${{env.IMAGE_NAME}}:latest
+
+  deploy:
+    name: Deploy to Cloud Run
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        version: 'latest'
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        project_id: ${{env.PROJECT_ID}}
+
+    - name: Authenticate Docker to Artifact Registry
+      run: gcloud auth configure-docker europe-west1-docker.pkg.dev
+
+    - name: Deploy to Jobs Cloud Run
+      run: |
+        gcloud run jobs update lookpyr \
+          --image ${{env.REGION}}-docker.pkg.dev/${{env.PROJECT_ID}}/images/${{env.IMAGE_NAME}}:latest \
+          --region ${{env.REGION}}
