@@ -347,7 +347,8 @@ def process(zone, outdir, pref_provider, plot_res, bucket):
             logging.info("Deleted %s sucessfully.", name)
 
             if bucket is not None:
-                load_on_gcs(bucket, str(file_png), name)
+                png_name = str(file_png).split("/")[-1]
+                load_on_gcs(bucket, str(file_png), png_name)
     else:
         file_path = None
         logging.info("All files already exist, no download")
