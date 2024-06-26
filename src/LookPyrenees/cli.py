@@ -119,6 +119,8 @@ def main(args):
     else:
         zones_list = [args.zone]
 
+    Path(args.out_path).mkdir(parents=True, exist_ok=True)
+
     for zone in zones_list:
 
         logging.info(f"Downloading {zone} zone")
