@@ -35,8 +35,8 @@ jobs:
       run: docker build . --tag ${{env.REGION}}-docker.pkg.dev/${{env.PROJECT_ID}}/images/${{env.IMAGE_NAME}}:latest
       working-directory: .
 
-    # - name: Push image
-    #   run: docker push ${{env.REGION}}-docker.pkg.dev/${{env.PROJECT_ID}}/images/${{env.IMAGE_NAME}}:latest
+    - name: Push image
+      run: docker push ${{env.REGION}}-docker.pkg.dev/${{env.PROJECT_ID}}/images/${{env.IMAGE_NAME}}:latest
     
     - name: Deploy to Jobs Cloud Run
       run: |
