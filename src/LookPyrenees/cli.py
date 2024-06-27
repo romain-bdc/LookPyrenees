@@ -10,7 +10,7 @@ __author__ = "Romain Buguet de Chargère"
 __copyright__ = "Romain Buguet de Chargère"
 __version__ = "0.0.1"
 
-ALL_ZONES = ["3seigneurs", "carlit", "orlu", "rulhe_nerassol"]
+ALL_ZONES = ["3seigneurs", "carlit", "orlu", "rulhe_nerassol", "montcalm"]
 
 
 # ---- CLI ----
