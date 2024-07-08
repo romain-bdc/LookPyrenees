@@ -1,5 +1,5 @@
 # For more information, please refer to https://aka.ms/vscode-docker-python
-FROM python:3.9
+FROM python:alpine
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -7,12 +7,40 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
 
+
+RUN apk update && apk add --no-cache gdal-dev \
+python3-dev \
+py3-pip \
+build-base \
+musl-dev \
+linux-headers \
+geos-dev \
+proj-dev \
+proj-util \
+libc-dev \
+gcc \
+g++ \
+jpeg-dev \
+zlib-dev \
+freetype-dev \
+lcms2-dev \
+openjpeg-dev \
+tiff-dev \
+tk-dev \
+tcl-dev \
+harfbuzz-dev \
+fribidi-dev \
+libimagequant-dev \
+libxcb-dev \
+libpng-dev
+RUN apk add --no-cache python3 py3-pip
+
 WORKDIR /LookPyrenees
 
 COPY . /LookPyrenees
 
-RUN groupadd -r user_lp
-RUN useradd -r -g user_lp user_lp 
+RUN addgroup -S user_lp
+RUN adduser -S -g user_lp user_lp 
 
 RUN mkdir -p /home/user_lp/.config /home/user_lp/.cache /LookPyrenees/output
 RUN chown -R user_lp:user_lp /home/user_lp /LookPyrenees
@@ -27,8 +55,8 @@ RUN chown -R user_lp:user_lp $MPLCONFIGDIR $XDG_CACHE_HOME
 
 # Install pip requirements
 # COPY requirements.txt /LookPyrenees/
-RUN python -m pip install --upgrade pip
-RUN python -m pip install -r requirements.txt
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install -r requirements.txt
 RUN pip install .
 
 USER user_lp
