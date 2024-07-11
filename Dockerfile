@@ -32,8 +32,8 @@ harfbuzz-dev \
 fribidi-dev \
 libimagequant-dev \
 libxcb-dev \
-libpng-dev
-RUN apk add --no-cache python3 py3-pip
+libpng-dev \
+gdal-driver-jp2openjpeg
 
 WORKDIR /LookPyrenees
 
@@ -63,4 +63,4 @@ USER user_lp
 
 ENTRYPOINT ["python3", "src/LookPyrenees/cli.py"]
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-CMD ["-b", "pyrenees_images"]
+# CMD ["-b", "pyrenees_images"]
