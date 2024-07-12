@@ -14,7 +14,7 @@ Here is an image of Orlu zone on 11-05-2024
 
 
 Here is a report Looker Studio where you can see all zones observed with most recent images date and with the few clous as possible: 
-[Visualize Pyrenees (Looker Studio report)](https://lookerstudio.google.com/embed/reporting/88692342-37da-4f11-aa67-e6bda7fb67a8/page/Uc62D)
+[Visualize Pyrenees (Looker Studio report)](https://lookerstudio.google.com/reporting/88692342-37da-4f11-aa67-e6bda7fb67a8)
 
 Here is an overview of the global workfow of this project:
 ![workflow](https://github.com/romain-bdc/LookPyrenees/assets/78345373/b5ef312c-a5e4-48cd-afeb-a9d11823e980)
