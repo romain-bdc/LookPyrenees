@@ -26,6 +26,10 @@ setup_logging(2)  # 0: nothing, 1: only progress bars, 2: INFO, 3: DEBUG
 logging.basicConfig()
 logging.getLogger().setLevel(logging.INFO)
 
+CLOUD_COVER = "eo:cloud_cover"
+ACQUISITION_DATE = "datetime"
+QUICKLOOK = "eodag:quicklook"
+
 
 def create_search_result_map(search_results, extent):
     """Small utility to create an interactive map with folium
@@ -90,7 +94,7 @@ def search_data(workspace, dag, pref_provider, plot_res):
 
     logging.info("Number of products found : %s", len(search_results))
 
-    if "eodag:quicklook" in search_results[0].properties.keys() and plot_res:
+    if QUICKLOOK in search_results[0].properties.keys() and plot_res:
         quicklook_img(workspace, search_results, len(search_results))
 
     return search_results
@@ -110,8 +114,8 @@ def quicklook_img(workspace, search_results, total_count):
         size_x = int(np.ceil(total_count / 3))
 
         axe_x = fig.add_subplot(size_x, 3, i)
-        date = product.properties["datetime"].split("T")[0]
-        axe_x.set_title(f'{date} and CC : {round(product.properties["eo:cloud_cover"])}')
+        date = product.properties[ACQUISITION_DATE].split("T")[0]
+        axe_x.set_title(f'{date} and CC : {round(product.properties[CLOUD_COVER])}')
         plt.imshow(img)
     plt.tight_layout()
     plt.show()
@@ -122,7 +126,7 @@ def filter_cloudcover(filtered_img, lim_cloudcover: float = 20.0):
     Return the minimum cloudcover on EOproducts list
     """
     too_cloudy = False
-    finals_img = filtered_img.crunch(FilterProperty({"eo:cloud_cover": lim_cloudcover, "operator": "lt"}))
+    finals_img = filtered_img.crunch(FilterProperty({CLOUD_COVER: lim_cloudcover, "operator": "lt"}))
 
     if len(finals_img) == 0:
         too_cloudy = True
@@ -179,7 +183,7 @@ def filter_img(search_results, new_crop):
         logging.info(
             "Filter product id %s with cloudcover of %s",
             eoprod.properties["id"],
-            eoprod.properties["eo:cloud_cover"],
+            eoprod.properties[CLOUD_COVER],
         )
 
     finals_img, too_cloudy = filter_cloudcover(filter_results_date)
@@ -195,8 +199,8 @@ def download_img(final_img, dag, outdir):
 
     out_path = dag.download(product=final_img, outputs_prefix=outdir)
 
-    final_date = final_img.properties["datetime"]
-    final_cc = round(final_img.properties["eo:cloud_cover"], ndigits=2)
+    final_date = final_img.properties[ACQUISITION_DATE]
+    final_cc = round(final_img.properties[CLOUD_COVER], ndigits=2)
 
     logging.info("Final product at date %s with cloudcover of %s", final_date, final_cc)
 
