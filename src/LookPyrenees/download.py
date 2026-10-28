@@ -228,6 +228,7 @@ def cropzone(zone, new_crop, out_path, outdir):
     raster_clipped = raster.rio.clip(new_crop.geometry.apply(mapping), new_crop.crs)
 
     tif_file = img_path.split("/")[-1].split(".")[0]
+    os.makedirs(outdir, exist_ok=True)
     path_to_tif_file = os.path.join(outdir, tif_file + f"_{zone}.tif")
     # Write the data to a new geotiff file
     raster_clipped.rio.to_raster(path_to_tif_file)
