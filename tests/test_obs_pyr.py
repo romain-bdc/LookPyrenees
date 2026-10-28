@@ -85,7 +85,7 @@ class TestClassifBase(unittest.TestCase):
             out_paths.append(download_img(eoprod, dag, self.path))
 
         for out_path in out_paths:
-            file_path = cropzone(zone, crop, out_path)
+            file_path = cropzone(zone, crop, out_path, self.path)
             img = mpimg.imread(file_path)
             plt.imshow(img)
             plt.show()

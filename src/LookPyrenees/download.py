@@ -77,32 +77,20 @@ def search_data(workspace, dag, pref_provider, plot_res):
     geom_path = glob.glob(f"{os.getcwd()}/ressources/pyrenees.shp")[0]
     geom = gpd.read_file(geom_path).geometry
 
-    if pref_provider == "peps":
-        default_search_criteria = {
-            "productType": "S2_MSI_L1C",
-            "start": last_month,
-            "end": end,
-            "cloudCover": 100,
-            "geom": geom[0],
-        }
-    else:
-        default_search_criteria = {
-            "productType": "S2_MSI_L2A",
-            "start": str(last_month),
-            "end": str(end),
-            "cloudCover": 100,
-            "geom": geom[0],
-        }
-
-    dag.set_preferred_provider(pref_provider)
-    search_results = dag.search_all(**default_search_criteria)
+    search_results = dag.search_all(
+        provider=pref_provider,
+        collection="S2_MSI_L2A",
+        start=str(last_month),
+        end=str(end),
+        geom=geom[0],
+    )
 
     if len(search_results) == 0:
         raise ValueError("No products found")
 
     logging.info("Number of products found : %s", len(search_results))
 
-    if "quicklook" in search_results[0].properties.keys() and plot_res:
+    if "eodag:quicklook" in search_results[0].properties.keys() and plot_res:
         quicklook_img(workspace, search_results, len(search_results))
 
     return search_results
@@ -122,8 +110,8 @@ def quicklook_img(workspace, search_results, total_count):
         size_x = int(np.ceil(total_count / 3))
 
         axe_x = fig.add_subplot(size_x, 3, i)
-        date = product.properties["modificationDate"].split("T")[0]
-        axe_x.set_title(f'{date} and CC : {round(product.properties["cloudCover"])}')
+        date = product.properties["datetime"].split("T")[0]
+        axe_x.set_title(f'{date} and CC : {round(product.properties["eo:cloud_cover"])}')
         plt.imshow(img)
     plt.tight_layout()
     plt.show()
@@ -134,7 +122,7 @@ def filter_cloudcover(filtered_img, lim_cloudcover: float = 20.0):
     Return the minimum cloudcover on EOproducts list
     """
     too_cloudy = False
-    finals_img = filtered_img.crunch(FilterProperty({"cloudCover": lim_cloudcover, "operator": "lt"}))
+    finals_img = filtered_img.crunch(FilterProperty({"eo:cloud_cover": lim_cloudcover, "operator": "lt"}))
 
     if len(finals_img) == 0:
         too_cloudy = True
@@ -191,7 +179,7 @@ def filter_img(search_results, new_crop):
         logging.info(
             "Filter product id %s with cloudcover of %s",
             eoprod.properties["id"],
-            eoprod.properties["cloudCover"],
+            eoprod.properties["eo:cloud_cover"],
         )
 
     finals_img, too_cloudy = filter_cloudcover(filter_results_date)
@@ -207,18 +195,15 @@ def download_img(final_img, dag, outdir):
 
     out_path = dag.download(product=final_img, outputs_prefix=outdir)
 
-    if "quicklook" in final_img.properties.keys():
-        quicklook_img(outdir, [final_img], 1)
-
-    final_date = final_img.properties["modificationDate"]
-    final_cc = round(final_img.properties["cloudCover"], ndigits=2)
+    final_date = final_img.properties["datetime"]
+    final_cc = round(final_img.properties["eo:cloud_cover"], ndigits=2)
 
     logging.info("Final product at date %s with cloudcover of %s", final_date, final_cc)
 
     return out_path
 
 
-def cropzone(zone, new_crop, out_path):
+def cropzone(zone, new_crop, out_path, outdir):
     """
     Crop the selected zone on image and create a tif file
     """
@@ -239,8 +224,7 @@ def cropzone(zone, new_crop, out_path):
     raster_clipped = raster.rio.clip(new_crop.geometry.apply(mapping), new_crop.crs)
 
     tif_file = img_path.split("/")[-1].split(".")[0]
-    output_img = "/".join(out_path.split("/")[:-2])
-    path_to_tif_file = os.path.join(output_img, tif_file + f"_{zone}.tif")
+    path_to_tif_file = os.path.join(outdir, tif_file + f"_{zone}.tif")
     # Write the data to a new geotiff file
     raster_clipped.rio.to_raster(path_to_tif_file)
 
@@ -337,7 +321,7 @@ def process(zone, outdir, pref_provider, plot_res, bucket):
 
     # If the list is wide we can stop now
     if out_paths:
-        file_path = [cropzone(zone, new_crop, out_path) for out_path in out_paths]
+        file_path = [cropzone(zone, new_crop, out_path, outdir) for out_path in out_paths]
 
         for file in file_path:
             name = file.split("/")[-1]

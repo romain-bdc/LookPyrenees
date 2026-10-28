@@ -22,7 +22,7 @@ Here is an overview of the global workfow of this project:
 
 
 ## Installation
-You need to clone this repository, create an virtual environment `python3 -m venv NAME_OF_YOUR_ENVIRONMENT` and run the following commmand to install requires packages `pip install .` or `python3 setup.py install` 
+You need [uv](https://docs.astral.sh/uv/) and Python 3.14. Clone this repository and run `uv sync` to create the virtual environment (`.venv`) and install the dependencies, then run the CLI with `uv run LookPyrenees ...`.
 
 This module uses [eodag](https://eodag.readthedocs.io/en/stable/) which is an open source library to facilitate downloading earth observation products from different providers.
 
@@ -30,7 +30,7 @@ When installation of packages finished you need to add your credentials account 
 
 ## Run command 
 
-After installation, you can run this command to download a zone of Pyrenees, a compromise is computed between the most recent and the less cloudy image : `Lookpyrenees -z [ZONE] -o OUT_PATH`.
+After installation, you can run this command to download a zone of Pyrenees, a compromise is computed between the most recent and the less cloudy image : `uv run LookPyrenees -z [ZONE] -o OUT_PATH`.
 
 The list of current zone available (you can find shapefile in **ressources** folder) is : 3seigneurs, montcalm, rulhe_nerassol, carlit, orlu
 
