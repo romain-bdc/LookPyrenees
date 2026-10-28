@@ -3,7 +3,7 @@
 import logging
 import os
 
-from google.cloud import storage  # type: ignore
+from google.cloud import storage
 
 os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "")
 

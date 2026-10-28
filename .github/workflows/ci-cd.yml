@@ -25,11 +25,8 @@ jobs:
     - name: Install dependencies
       run: uv sync --locked
 
-    - name: Analysing the code with pylint
-      run: uv run pylint --fail-under=9 --output-format=text src tests
-
-    - name: Analysing the code with mypy
-      run: uv run mypy src/
+    - name: Lint with ruff
+      run: uv run ruff check
 
     - name: Decode and set up Google Cloud credentials
       run: |

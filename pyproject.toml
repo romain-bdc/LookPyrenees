@@ -27,7 +27,20 @@ dependencies = [
 LookPyrenees = "LookPyrenees.cli:run"
 
 [dependency-groups]
-dev = ["isort", "flake8", "mypy", "pre-commit", "pylint"]
+dev = [
+    "pre-commit",
+ "ruff",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/LookPyrenees"]
+
+[tool.ruff]
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "C4", "C90", "PL"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15

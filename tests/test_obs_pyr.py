@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """ Test Observatory of Pyrenees"""
-# pylint: disable=import-error
 import datetime
 import glob
 import logging
@@ -12,8 +11,8 @@ from pathlib import Path
 import geopandas as gpd
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
-
 from eodag import EODataAccessGateway
+
 from LookPyrenees.download import (
     check_files_in_local,
     check_old_files,

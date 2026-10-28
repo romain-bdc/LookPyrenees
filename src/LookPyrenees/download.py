@@ -1,5 +1,4 @@
 """This module allow to search, crop and download zone of Pyrenees"""
-# pylint: disable=import-error
 import datetime
 import glob
 import logging
@@ -14,12 +13,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import rasterio as rio
 import rioxarray as rxr
+from eodag import EODataAccessGateway, setup_logging
 from eodag.api.search_result import SearchResult
 from eodag.crunch import FilterDate, FilterOverlap, FilterProperty
 from PIL import Image
 from shapely.geometry import mapping
 
-from eodag import EODataAccessGateway, setup_logging
 from LookPyrenees.manage_bucket import check_files_on_bucket, load_on_gcs
 
 setup_logging(2)  # 0: nothing, 1: only progress bars, 2: INFO, 3: DEBUG
@@ -29,6 +28,7 @@ logging.getLogger().setLevel(logging.INFO)
 CLOUD_COVER = "eo:cloud_cover"
 ACQUISITION_DATE = "datetime"
 QUICKLOOK = "eodag:quicklook"
+MIN_COVERAGE_PERCENT = 95
 
 
 def create_search_result_map(search_results, extent):
@@ -155,7 +155,7 @@ def filter_img(search_results, new_crop):
                 100 * product.geometry.intersection(search_geometry).area / area_zone
             )
 
-            if coverage_zone > 95:
+            if coverage_zone > MIN_COVERAGE_PERCENT:
                 product_to_keep.append(product)
 
         filter_results = SearchResult(products=product_to_keep)
