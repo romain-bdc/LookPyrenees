@@ -22,15 +22,15 @@ Here is an overview of the global workfow of this project:
 
 
 ## Installation
-You need to clone this repository, create an virtual environment `python3 -m venv NAME_OF_YOUR_ENVIRONMENT` and run the following commmand to install requires packages `pip install .` or `python3 setup.py install` 
+You need [uv](https://docs.astral.sh/uv/) and Python 3.14. Clone this repository and run `uv sync` to create the virtual environment (`.venv`) and install the dependencies, then run the CLI with `uv run LookPyrenees ...`.
 
 This module uses [eodag](https://eodag.readthedocs.io/en/stable/) which is an open source library to facilitate downloading earth observation products from different providers.
 
-When installation of packages finished you need to add your credentials account of Peps : [peps](https://peps.cnes.fr/rocket/#/home) and copernicus data browser : [cop_dataspace](https://dataspace.copernicus.eu/browser/?zoom=3&lat=26&lng=0&themeId=DEFAULT-THEME&visualizationUrl=https%3A%2F%2Fsh.dataspace.copernicus.eu%2Fogc%2Fwms%2F28b654e7-8912-4e59-9e58-85b58d768b3a&datasetId=S2_L2A_CDAS&demSource3D=%22MAPZEN%22&cloudCoverage=30) in the eodag configuration file that you can find in $HOME/.config/eodag/eodag.yml
+When installation of packages finished you need to add your credentials account of the copernicus data browser : [cop_dataspace](https://dataspace.copernicus.eu/browser/?zoom=3&lat=26&lng=0&themeId=DEFAULT-THEME&visualizationUrl=https%3A%2F%2Fsh.dataspace.copernicus.eu%2Fogc%2Fwms%2F28b654e7-8912-4e59-9e58-85b58d768b3a&datasetId=S2_L2A_CDAS&demSource3D=%22MAPZEN%22&cloudCoverage=30) in the eodag configuration file that you can find in $HOME/.config/eodag/eodag.yml
 
 ## Run command 
 
-After installation, you can run this command to download a zone of Pyrenees, a compromise is computed between the most recent and the less cloudy image : `Lookpyrenees -z [ZONE] -o OUT_PATH`.
+After installation, you can run this command to download a zone of Pyrenees, a compromise is computed between the most recent and the less cloudy image : `uv run LookPyrenees -z [ZONE] -o OUT_PATH`.
 
 The list of current zone available (you can find shapefile in **ressources** folder) is : 3seigneurs, montcalm, rulhe_nerassol, carlit, orlu
 

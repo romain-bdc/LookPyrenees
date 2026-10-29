@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "LookPyrenees"
+version = "0.0.1"
+description = "Downloading and visualize snow condition in pyrenees"
+readme = "README.md"
+license = { file = "LICENSE.txt" }
+authors = [{ name = "Romain Buguet de Chargère", email = "rbuguet@gmail.com" }]
+requires-python = ">=3.14"
+dependencies = [
+    "eodag",
+    "folium",
+    "geopandas",
+    "google-cloud-storage",
+    "matplotlib",
+    "numpy",
+    "pillow",
+    "rasterio",
+    "rioxarray",
+    "shapely",
+]
+
+[project.scripts]
+LookPyrenees = "LookPyrenees.cli:run"
+
+[dependency-groups]
+dev = [
+    "pre-commit",
+ "ruff",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/LookPyrenees"]
+
+[tool.ruff]
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "C4", "C90", "PL"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15

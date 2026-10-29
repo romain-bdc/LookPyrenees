@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """ Test Observatory of Pyrenees"""
-# pylint: disable=import-error
 import datetime
 import glob
 import logging
@@ -12,8 +11,8 @@ from pathlib import Path
 import geopandas as gpd
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
-
 from eodag import EODataAccessGateway
+
 from LookPyrenees.download import (
     check_files_in_local,
     check_old_files,
@@ -85,7 +84,7 @@ class TestClassifBase(unittest.TestCase):
             out_paths.append(download_img(eoprod, dag, self.path))
 
         for out_path in out_paths:
-            file_path = cropzone(zone, crop, out_path)
+            file_path = cropzone(zone, crop, out_path, self.path)
             img = mpimg.imread(file_path)
             plt.imshow(img)
             plt.show()

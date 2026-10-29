@@ -6,4 +6,6 @@ lib64/
 *.egg-info/
 dist
 conf.txt
-.dockerignore
+
+.venv/
+data/

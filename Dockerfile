@@ -1,66 +1,34 @@
-# For more information, please refer to https://aka.ms/vscode-docker-python
-FROM python:alpine
+FROM python:3.14-slim
 
-# Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE=1
+COPY --from=ghcr.io/astral-sh/uv:0.9 /uv /uvx /bin/
 
-# Turns off buffering for easier container logging
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never \
+    PATH="/LookPyrenees/.venv/bin:$PATH" \
+    MPLBACKEND=Agg \
+    MPLCONFIGDIR=/LookPyrenees/output/.matplotlib \
+    XDG_CACHE_HOME=/LookPyrenees/output/.cache
 
-
-RUN apk update && apk add --no-cache gdal-dev \
-python3-dev \
-py3-pip \
-build-base \
-musl-dev \
-linux-headers \
-geos-dev \
-proj-dev \
-proj-util \
-libc-dev \
-gcc \
-g++ \
-jpeg-dev \
-zlib-dev \
-freetype-dev \
-lcms2-dev \
-openjpeg-dev \
-tiff-dev \
-tk-dev \
-tcl-dev \
-harfbuzz-dev \
-fribidi-dev \
-libimagequant-dev \
-libxcb-dev \
-libpng-dev \
-gdal-driver-jp2openjpeg
+RUN apt-get update && apt-get install -y --no-install-recommends libexpat1 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /LookPyrenees
 
-COPY . /LookPyrenees
+# Install dependencies first to benefit from layer caching
+COPY pyproject.toml uv.lock .python-version README.md LICENSE.txt ./
+RUN uv sync --locked --no-install-project --no-dev
 
-RUN addgroup -S user_lp
-RUN adduser -S -g user_lp user_lp 
+COPY src ./src
+COPY ressources ./ressources
+RUN uv sync --locked --no-dev
 
-RUN mkdir -p /home/user_lp/.config /home/user_lp/.cache /LookPyrenees/output
-RUN chown -R user_lp:user_lp /home/user_lp /LookPyrenees
-
-# Set environment variables for Matplotlib and Fontconfig
-ENV MPLCONFIGDIR=/LookPyrenees/output/.matplotlib
-ENV XDG_CACHE_HOME=/LookPyrenees/output/.cache
-
-# Ensure directories exist and have correct permissions
-RUN mkdir -p $MPLCONFIGDIR $XDG_CACHE_HOME
-RUN chown -R user_lp:user_lp $MPLCONFIGDIR $XDG_CACHE_HOME
-
-# Install pip requirements
-# COPY requirements.txt /LookPyrenees/
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install -r requirements.txt
-RUN pip install .
-
+RUN useradd --system --create-home user_lp \
+    && mkdir -p /LookPyrenees/data /LookPyrenees/output/.matplotlib /LookPyrenees/output/.cache \
+    && chown -R user_lp:user_lp /LookPyrenees/data /LookPyrenees/output
 USER user_lp
 
-ENTRYPOINT ["python3", "src/LookPyrenees/cli.py"]
-# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
+ENTRYPOINT ["LookPyrenees"]
 CMD ["-b", "pyrenees_images"]

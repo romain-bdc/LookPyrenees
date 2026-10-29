@@ -1,3 +1,3 @@
-""" Init Module """  # pylint: disable=invalid-name
+""" Init Module """
 __version__ = "0.0.1"
 # print(sys.version_info)

@@ -1,5 +1,4 @@
 """This module allow to search, crop and download zone of Pyrenees"""
-# pylint: disable=import-error
 import datetime
 import glob
 import logging
@@ -14,17 +13,22 @@ import matplotlib.pyplot as plt
 import numpy as np
 import rasterio as rio
 import rioxarray as rxr
+from eodag import EODataAccessGateway, setup_logging
 from eodag.api.search_result import SearchResult
 from eodag.crunch import FilterDate, FilterOverlap, FilterProperty
 from PIL import Image
 from shapely.geometry import mapping
 
-from eodag import EODataAccessGateway, setup_logging
 from LookPyrenees.manage_bucket import check_files_on_bucket, load_on_gcs
 
 setup_logging(2)  # 0: nothing, 1: only progress bars, 2: INFO, 3: DEBUG
 logging.basicConfig()
 logging.getLogger().setLevel(logging.INFO)
+
+CLOUD_COVER = "eo:cloud_cover"
+ACQUISITION_DATE = "datetime"
+QUICKLOOK = "eodag:quicklook"
+MIN_COVERAGE_PERCENT = 95
 
 
 def create_search_result_map(search_results, extent):
@@ -77,32 +81,20 @@ def search_data(workspace, dag, pref_provider, plot_res):
     geom_path = glob.glob(f"{os.getcwd()}/ressources/pyrenees.shp")[0]
     geom = gpd.read_file(geom_path).geometry
 
-    if pref_provider == "peps":
-        default_search_criteria = {
-            "productType": "S2_MSI_L1C",
-            "start": last_month,
-            "end": end,
-            "cloudCover": 100,
-            "geom": geom[0],
-        }
-    else:
-        default_search_criteria = {
-            "productType": "S2_MSI_L2A",
-            "start": str(last_month),
-            "end": str(end),
-            "cloudCover": 100,
-            "geom": geom[0],
-        }
-
-    dag.set_preferred_provider(pref_provider)
-    search_results = dag.search_all(**default_search_criteria)
+    search_results = dag.search_all(
+        provider=pref_provider,
+        collection="S2_MSI_L2A",
+        start=str(last_month),
+        end=str(end),
+        geom=geom[0],
+    )
 
     if len(search_results) == 0:
         raise ValueError("No products found")
 
     logging.info("Number of products found : %s", len(search_results))
 
-    if "quicklook" in search_results[0].properties.keys() and plot_res:
+    if QUICKLOOK in search_results[0].properties.keys() and plot_res:
         quicklook_img(workspace, search_results, len(search_results))
 
     return search_results
@@ -122,8 +114,8 @@ def quicklook_img(workspace, search_results, total_count):
         size_x = int(np.ceil(total_count / 3))
 
         axe_x = fig.add_subplot(size_x, 3, i)
-        date = product.properties["modificationDate"].split("T")[0]
-        axe_x.set_title(f'{date} and CC : {round(product.properties["cloudCover"])}')
+        date = product.properties[ACQUISITION_DATE].split("T")[0]
+        axe_x.set_title(f'{date} and CC : {round(product.properties[CLOUD_COVER])}')
         plt.imshow(img)
     plt.tight_layout()
     plt.show()
@@ -134,7 +126,7 @@ def filter_cloudcover(filtered_img, lim_cloudcover: float = 20.0):
     Return the minimum cloudcover on EOproducts list
     """
     too_cloudy = False
-    finals_img = filtered_img.crunch(FilterProperty({"cloudCover": lim_cloudcover, "operator": "lt"}))
+    finals_img = filtered_img.crunch(FilterProperty({CLOUD_COVER: lim_cloudcover, "operator": "lt"}))
 
     if len(finals_img) == 0:
         too_cloudy = True
@@ -163,7 +155,7 @@ def filter_img(search_results, new_crop):
                 100 * product.geometry.intersection(search_geometry).area / area_zone
             )
 
-            if coverage_zone > 95:
+            if coverage_zone > MIN_COVERAGE_PERCENT:
                 product_to_keep.append(product)
 
         filter_results = SearchResult(products=product_to_keep)
@@ -191,7 +183,7 @@ def filter_img(search_results, new_crop):
         logging.info(
             "Filter product id %s with cloudcover of %s",
             eoprod.properties["id"],
-            eoprod.properties["cloudCover"],
+            eoprod.properties[CLOUD_COVER],
         )
 
     finals_img, too_cloudy = filter_cloudcover(filter_results_date)
@@ -207,18 +199,15 @@ def download_img(final_img, dag, outdir):
 
     out_path = dag.download(product=final_img, outputs_prefix=outdir)
 
-    if "quicklook" in final_img.properties.keys():
-        quicklook_img(outdir, [final_img], 1)
-
-    final_date = final_img.properties["modificationDate"]
-    final_cc = round(final_img.properties["cloudCover"], ndigits=2)
+    final_date = final_img.properties[ACQUISITION_DATE]
+    final_cc = round(final_img.properties[CLOUD_COVER], ndigits=2)
 
     logging.info("Final product at date %s with cloudcover of %s", final_date, final_cc)
 
     return out_path
 
 
-def cropzone(zone, new_crop, out_path):
+def cropzone(zone, new_crop, out_path, outdir):
     """
     Crop the selected zone on image and create a tif file
     """
@@ -239,8 +228,8 @@ def cropzone(zone, new_crop, out_path):
     raster_clipped = raster.rio.clip(new_crop.geometry.apply(mapping), new_crop.crs)
 
     tif_file = img_path.split("/")[-1].split(".")[0]
-    output_img = "/".join(out_path.split("/")[:-2])
-    path_to_tif_file = os.path.join(output_img, tif_file + f"_{zone}.tif")
+    os.makedirs(outdir, exist_ok=True)
+    path_to_tif_file = os.path.join(outdir, tif_file + f"_{zone}.tif")
     # Write the data to a new geotiff file
     raster_clipped.rio.to_raster(path_to_tif_file)
 
@@ -337,7 +326,7 @@ def process(zone, outdir, pref_provider, plot_res, bucket):
 
     # If the list is wide we can stop now
     if out_paths:
-        file_path = [cropzone(zone, new_crop, out_path) for out_path in out_paths]
+        file_path = [cropzone(zone, new_crop, out_path, outdir) for out_path in out_paths]
 
         for file in file_path:
             name = file.split("/")[-1]

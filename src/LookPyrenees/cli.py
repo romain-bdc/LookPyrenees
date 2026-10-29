@@ -48,7 +48,7 @@ def parse_args(args):
         "-p",
         "--pref-provider",
         dest="pref_provider",
-        help="Select preferred provider",
+        help="eodag provider to search and download from (default: cop_dataspace)",
         type=str,
         default="cop_dataspace",
     )
