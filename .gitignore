@@ -9,3 +9,7 @@ conf.txt
 
 .venv/
 data/
+
+# Firebase CLI cache
+.firebase/
+firebase-debug.log

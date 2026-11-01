@@ -230,7 +230,7 @@ class TestVariantsAndManifest(unittest.TestCase):
             for key, limit in (("thumb", THUMB_SIZE), ("view", VIEW_SIZE)):
                 with Image.open(variants[key]) as img:
                     assert img.format == "WEBP"
-                    assert max(img.size) <= limit or img.size == src_size
+                    assert max(img.size) == min(limit, max(src_size))
 
     def test_parse_image_name(self):
         """Zone names with underscores are parsed correctly"""
