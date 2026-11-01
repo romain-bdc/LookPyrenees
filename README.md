@@ -51,7 +51,7 @@ optional arguments:
                         Select the bucket name
   -s PLOT_RESULTS, --show-results PLOT_RESULTS
                         Boolean to view or not search results
-  --backfill            move legacy root-level PNGs of the bucket to orig/, generate
+  --backfill            copy legacy root-level PNGs of the bucket to orig/, generate
                         thumb/ and view/, rebuild the manifest
   --version             show program's version number and exit
   -v, --verbose         set loglevel to INFO
@@ -73,7 +73,7 @@ Images are cached for one year (`immutable`), the manifest for 5 minutes. The st
 ### One-time setup
 - `uv run LookPyrenees -b pyrenees_images --backfill` converts images that were uploaded before the website existed (legacy PNGs at the bucket root are kept, delete them when you want).
 - `./infra/setup_bucket.sh` makes the bucket publicly readable and applies `infra/cors.json` (allowed origins: the Firebase domains).
-- `firebase deploy --only hosting` deploys `site/`. The workflow `deploy-site.yml` does it on each push to `main` touching `site/`; it needs the `FIREBASE_SERVICE_ACCOUNT_LOOKPYRENEES` GitHub secret (created by `firebase init hosting:github`).
+- `firebase deploy --only hosting` deploys `site/`. The workflow `deploy-site.yml` does it on each push to `main` touching `site/`; it needs the `FIREBASE_SERVICE_ACCOUNT_LOOKPYRENEES_6E7E4` GitHub secret (created by `firebase init hosting:github`).
 - To preview locally: `cd site && python3 -m http.server 5000` (port 5000 is allowed by the CORS config).
 
 ## To be continued

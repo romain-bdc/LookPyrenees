@@ -21,6 +21,6 @@ jobs:
       uses: FirebaseExtended/action-hosting-deploy@v0
       with:
         repoToken: ${{ secrets.GITHUB_TOKEN }}
-        firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_LOOKPYRENEES }}
+        firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_LOOKPYRENEES_6E7E4 }}
         projectId: lookpyrenees-6e7e4
         channelId: live

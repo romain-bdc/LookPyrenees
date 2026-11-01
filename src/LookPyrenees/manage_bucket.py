@@ -160,7 +160,7 @@ def upload_variants(bucket_name, png_path, variants):
 
 
 def backfill(bucket_name, make_variants):
-    """Move legacy root-level PNGs to orig/ and generate their thumb/ and view/ variants"""
+    """Copy legacy root-level PNGs to orig/ (originals are kept) and generate their thumb/ and view/ variants"""
     client = storage.Client()
     bucket = client.bucket(bucket_name)
 

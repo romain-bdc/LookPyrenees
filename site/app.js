@@ -8,6 +8,7 @@ const lightbox = document.getElementById("lightbox");
 let manifest = null;
 let timer = null;
 
+const esc = (text) => text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const url = (path) => BUCKET_URL + path;
 const label = (zone) => zone.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
 const fmtDate = (iso) => new Date(iso + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
@@ -35,8 +36,8 @@ function renderHome() {
   for (const [zone, images] of Object.entries(manifest.zones)) {
     const last = images[images.length - 1];
     grid.append(el(`<a class="card" href="#/zone/${encodeURIComponent(zone)}">
-      <img loading="lazy" src="${url(last.thumb)}" alt="${label(zone)}">
-      <div><strong>${label(zone)}</strong><span class="muted">${fmtDate(last.date)} · ${images.length} images</span></div>
+      <img loading="lazy" src="${url(last.thumb)}" alt="${esc(label(zone))}">
+      <div><strong>${esc(label(zone))}</strong><span class="muted">${fmtDate(last.date)} · ${images.length} images</span></div>
     </a>`));
   }
   app.replaceChildren(grid);
@@ -47,7 +48,7 @@ function renderZone(zone, mode) {
   if (!images) { app.textContent = "Zone inconnue."; return; }
 
   const tabs = el(`<div class="controls">
-    <a href="#/">← Zones</a><h2 style="margin:0">${label(zone)}</h2>
+    <a href="#/">← Zones</a><h2 style="margin:0">${esc(label(zone))}</h2>
     <button data-mode="time" class="${mode === "compare" ? "" : "on"}">Évolution</button>
     <button data-mode="compare" class="${mode === "compare" ? "on" : ""}">Avant / après</button>
   </div>`);

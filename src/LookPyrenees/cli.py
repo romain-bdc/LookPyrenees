@@ -72,7 +72,7 @@ def parse_args(args):
     parser.add_argument(
         "--backfill",
         dest="backfill",
-        help="Move legacy root-level PNGs of the bucket to orig/, generate thumb/ and view/, rebuild the manifest",
+        help="Copy legacy root-level PNGs of the bucket to orig/, generate thumb/ and view/, rebuild the manifest",
         action="store_true",
     )
     parser.add_argument(

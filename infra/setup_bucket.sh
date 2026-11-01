@@ -3,6 +3,7 @@
 # Requires gcloud logged in with owner rights on the project.
 set -euo pipefail
 
+# GCP project that owns the bucket (the Firebase project is lookpyrenees-6e7e4)
 PROJECT="${PROJECT:-lookpyrenees}"
 BUCKET="${BUCKET:-pyrenees_images}"
 DIR="$(cd "$(dirname "$0")" && pwd)"
