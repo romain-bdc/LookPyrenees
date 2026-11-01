@@ -4,7 +4,8 @@ import logging
 import sys
 from pathlib import Path
 
-from LookPyrenees.download import check_old_files, process
+from LookPyrenees.download import check_old_files, make_variants, process
+from LookPyrenees.manage_bucket import backfill, build_manifest
 
 __author__ = "Romain Buguet de Chargère"
 __copyright__ = "Romain Buguet de Chargère"
@@ -69,6 +70,12 @@ def parse_args(args):
         default=False,
     )
     parser.add_argument(
+        "--backfill",
+        dest="backfill",
+        help="Move legacy root-level PNGs of the bucket to orig/, generate thumb/ and view/, rebuild the manifest",
+        action="store_true",
+    )
+    parser.add_argument(
         "--version", action="version", version=f"Look Pyrenees version : {__version__}"
     )
 
@@ -114,6 +121,12 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
 
+    if args.backfill:
+        if args.bucket_name is None:
+            raise SystemExit("--backfill requires --bucket-name")
+        backfill(args.bucket_name, make_variants)
+        return
+
     if args.zone == "all":
         zones_list = ALL_ZONES
     else:
@@ -132,6 +145,9 @@ def main(args):
             plot_res=args.plot_results,
             bucket=args.bucket_name
         )
+
+    if args.bucket_name is not None:
+        build_manifest(args.bucket_name)
 
     check_old_files(args.out_path)
 

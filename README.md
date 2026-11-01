@@ -13,8 +13,7 @@ Here is an image of Orlu zone on 11-05-2024
 
 
 
-Here is a report Looker Studio where you can see all zones observed with most recent images date and with the few clous as possible: 
-[Visualize Pyrenees (Looker Studio report)](https://lookerstudio.google.com/reporting/88692342-37da-4f11-aa67-e6bda7fb67a8)
+Browse all zones, their evolution over time and a before/after comparison on the website: https://lookpyrenees.web.app
 
 Here is an overview of the global workfow of this project:
 ![workflow](https://github.com/romain-bdc/LookPyrenees/assets/78345373/b5ef312c-a5e4-48cd-afeb-a9d11823e980)
@@ -37,7 +36,7 @@ The list of current zone available (you can find shapefile in **ressources** fol
 Right here the command help :
 ```
 usage: LookPyrenees [-h] [-z ZONE] [-o OUT_PATH] [-p PREF_PROVIDER] [-b BUCKET_NAME]
-                    [-s PLOT_RESULTS] [--version] [-v] [-vv]
+                    [-s PLOT_RESULTS] [--backfill] [--version] [-v] [-vv]
 
 Workflow that download last images of Pyrenees
 
@@ -52,10 +51,30 @@ optional arguments:
                         Select the bucket name
   -s PLOT_RESULTS, --show-results PLOT_RESULTS
                         Boolean to view or not search results
+  --backfill            move legacy root-level PNGs of the bucket to orig/, generate
+                        thumb/ and view/, rebuild the manifest
   --version             show program's version number and exit
   -v, --verbose         set loglevel to INFO
   -vv, --very-verbose   set loglevel to DEBUG
 ```
+
+## Architecture of the website
+The daily Cloud Run job downloads the images and, when `-b BUCKET` is given, writes in the bucket:
+
+| Path | Content |
+| --- | --- |
+| `thumb/<name>.webp` | thumbnail (~400 px), used in grids |
+| `view/<name>.webp` | display version (~1600 px) |
+| `orig/<name>.png` | original image, for download |
+| `manifest.json` | list of zones / dates / tiles / paths, rebuilt at the end of each run |
+
+Images are cached for one year (`immutable`), the manifest for 5 minutes. The static site in `site/` is served by Firebase Hosting and reads `manifest.json` and the images straight from the public bucket.
+
+### One-time setup
+- `uv run LookPyrenees -b pyrenees_images --backfill` converts images that were uploaded before the website existed (legacy PNGs at the bucket root are kept, delete them when you want).
+- `./infra/setup_bucket.sh` makes the bucket publicly readable and applies `infra/cors.json` (allowed origins: the Firebase domains).
+- `firebase deploy --only hosting` deploys `site/`. The workflow `deploy-site.yml` does it on each push to `main` touching `site/`; it needs the `FIREBASE_SERVICE_ACCOUNT_LOOKPYRENEES` GitHub secret (created by `firebase init hosting:github`).
+- To preview locally: `cd site && python3 -m http.server 5000` (port 5000 is allowed by the CORS config).
 
 ## To be continued
 - When a zone is exactly between two product it raises an error, the objective is to fix this by merging two products which cover the zone concerned.

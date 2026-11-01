@@ -5,6 +5,7 @@ import glob
 import logging
 import os
 import shutil
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -12,18 +13,22 @@ import geopandas as gpd
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from eodag import EODataAccessGateway
+from PIL import Image
 
 from LookPyrenees.download import (
+    THUMB_SIZE,
+    VIEW_SIZE,
     check_files_in_local,
     check_old_files,
     convert_tiff_to_png,
     cropzone,
     download_img,
     filter_img,
+    make_variants,
     process,
     search_data,
 )
-from LookPyrenees.manage_bucket import check_files_on_bucket, delete_blob, load_on_gcs
+from LookPyrenees.manage_bucket import check_files_on_bucket, delete_blob, load_on_gcs, parse_image_name
 
 CURRENT_DIR = os.getcwd()
 
@@ -210,3 +215,25 @@ class TestClassifBase(unittest.TestCase):
         plt.imshow(img)
         plt.show()
         plt.clf()
+
+
+class TestVariantsAndManifest(unittest.TestCase):
+    """Offline tests for webp variants and image name parsing"""
+
+    def test_make_variants(self):
+        """Thumb and view are webp, bounded in size and never upscaled"""
+        src = os.path.join(CURRENT_DIR, "tests", "examples", "T31TCH_20240511T103629_TCI_10m_rulhe_nerassol.png")
+        with Image.open(src) as img:
+            src_size = img.size
+        with tempfile.TemporaryDirectory() as tmp:
+            variants = make_variants(src, tmp)
+            for key, limit in (("thumb", THUMB_SIZE), ("view", VIEW_SIZE)):
+                with Image.open(variants[key]) as img:
+                    assert img.format == "WEBP"
+                    assert max(img.size) <= limit or img.size == src_size
+
+    def test_parse_image_name(self):
+        """Zone names with underscores are parsed correctly"""
+        info = parse_image_name("T31TCH_20240511T103629_TCI_10m_rulhe_nerassol.png")
+        assert info == {"tile": "T31TCH", "datetime": "20240511T103629", "zone": "rulhe_nerassol"}
+        assert parse_image_name("manifest.json") is None

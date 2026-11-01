@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://lookpyrenees.web.app", "https://lookpyrenees.firebaseapp.com", "http://localhost:5000"],
+    "method": ["GET", "HEAD"],
+    "responseHeader": ["Content-Type"],
+    "maxAgeSeconds": 3600
+  }
+]
