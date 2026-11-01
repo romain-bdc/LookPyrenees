@@ -19,7 +19,7 @@ from eodag.crunch import FilterDate, FilterOverlap, FilterProperty
 from PIL import Image
 from shapely.geometry import mapping
 
-from LookPyrenees.manage_bucket import check_files_on_bucket, load_on_gcs
+from LookPyrenees.manage_bucket import check_files_on_bucket, upload_variants
 
 setup_logging(2)  # 0: nothing, 1: only progress bars, 2: INFO, 3: DEBUG
 logging.basicConfig()
@@ -29,6 +29,9 @@ CLOUD_COVER = "eo:cloud_cover"
 ACQUISITION_DATE = "datetime"
 QUICKLOOK = "eodag:quicklook"
 MIN_COVERAGE_PERCENT = 95
+THUMB_SIZE = 400
+VIEW_SIZE = 1600
+WEBP_QUALITY = 80
 
 
 def create_search_result_map(search_results, extent):
@@ -293,6 +296,27 @@ def convert_tiff_to_png(input_tiff_path, output_png_path):
         logging.error("Error converting %s to PNG: %s", tif_name, e)
 
 
+def make_variants(png_path, out_dir=None):
+    """
+    Create the webp thumbnail (THUMB_SIZE) and display version (VIEW_SIZE) of a PNG.
+    Images are never upscaled. Files are written to <out_dir>/thumb/ and <out_dir>/view/.
+    Returns {"thumb": path, "view": path}.
+    """
+    png_path = Path(png_path)
+    out_dir = Path(out_dir) if out_dir is not None else png_path.parent
+    variants = {}
+    with Image.open(png_path) as src:
+        img = src.convert("RGB")
+        for key, size in (("thumb", THUMB_SIZE), ("view", VIEW_SIZE)):
+            resized = img.copy()
+            resized.thumbnail((size, size), Image.Resampling.LANCZOS)
+            path = out_dir / key / png_path.with_suffix(".webp").name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            resized.save(path, format="WEBP", quality=WEBP_QUALITY)
+            variants[key] = path
+    return variants
+
+
 def process(zone, outdir, pref_provider, plot_res, bucket):
     """
     Process search, filter and crop final EO product
@@ -336,8 +360,7 @@ def process(zone, outdir, pref_provider, plot_res, bucket):
             logging.info("Deleted %s sucessfully.", name)
 
             if bucket is not None:
-                png_name = str(file_png).split("/")[-1]
-                load_on_gcs(bucket, str(file_png), png_name)
+                upload_variants(bucket, file_png, make_variants(file_png))
     else:
         file_path = None
         logging.info("All files already exist, no download")
