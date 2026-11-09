@@ -66,8 +66,8 @@ def env():
     return TestClient(create_app(settings, svc)), cache, searcher, reader
 
 
-def test_healthz(env):
-    assert env[0].get("/healthz").json() == {"status": "ok"}
+def test_health(env):
+    assert env[0].get("/api/health").json() == {"status": "ok"}
 
 
 def test_dates_default_and_prefilter(env):
@@ -154,7 +154,7 @@ def test_rate_limit_429():
     client = TestClient(create_app(settings, svc))
     codes = [client.get("/api/dates", params={"lat": 42.78, "lon": 1.32}).status_code for _ in range(3)]
     assert codes == [200, 200, 429]
-    assert client.get("/healthz").status_code == 200
+    assert client.get("/api/health").status_code == 200
 
 
 def test_rate_limiter_window():
@@ -188,3 +188,15 @@ def test_sas_token_cached_until_expiry():
     assert t.get() == t.get() == "sv=1&n=1" and len(calls) == 1
     t.margin = 7200  # expire "bientot"
     assert t.get() == "sv=1&n=2"
+
+
+def test_dates_limit_processes_only_most_recent_items(env):
+    client, cache, _, _ = env
+    r = client.get("/api/dates", params={"lat": 42.78, "lon": 1.32, "limit": 1})
+    j = r.json()
+    assert r.status_code == 200 and j["complete"] is False
+    assert [d["item"] for d in j["dates"]] == ["B-bad"]  # le plus recent seulement
+    assert not any(k.startswith("stats/A/") for k in cache.keys())
+    full = client.get("/api/dates", params={"lat": 42.78, "lon": 1.32}).json()
+    assert full["complete"] is True and [d["item"] for d in full["dates"]] == ["B-bad", "A"]
+    assert client.get("/api/dates", params={"lat": 42.78, "lon": 1.32, "limit": 0}).status_code == 400
