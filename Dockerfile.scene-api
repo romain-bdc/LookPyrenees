@@ -1,0 +1,36 @@
+# Image du service Cloud Run "scene-api" (FastAPI). Distincte du Dockerfile du job quotidien.
+# Build : docker build -f Dockerfile.scene-api -t scene-api .
+FROM python:3.14-slim
+
+COPY --from=ghcr.io/astral-sh/uv:0.9 /uv /uvx /bin/
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never \
+    PATH="/app/.venv/bin:$PATH" \
+    PYTHONPATH="/app/src" \
+    UV_PROJECT_ENVIRONMENT=/app/.venv \
+    XDG_CACHE_HOME=/tmp/.cache \
+    PORT=8080
+
+# Les roues rasterio embarquent GDAL ; libexpat1 est la seule lib système requise (comme l'image du job).
+RUN apt-get update && apt-get install -y --no-install-recommends libexpat1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# --only-group : installe uniquement les dépendances du groupe `scene-api`
+# (ni le projet LookPyrenees, ni eodag/geopandas/folium du job). Le code est lu via PYTHONPATH.
+COPY pyproject.toml uv.lock .python-version ./
+RUN uv sync --locked --no-dev --only-group scene-api
+
+COPY src/scene_api ./src/scene_api
+COPY ressources/pyrenees.* ./ressources/
+
+RUN useradd --system --create-home user_scene
+USER user_scene
+
+EXPOSE 8080
+CMD ["sh", "-c", "exec uvicorn scene_api.main:app --host 0.0.0.0 --port ${PORT:-8080}"]

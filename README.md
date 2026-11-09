@@ -76,6 +76,37 @@ Images are cached for one year (`immutable`), the manifest for 5 minutes. The st
 - `firebase deploy --only hosting` deploys `site/`. The workflow `deploy-site.yml` does it on each push to `main` touching `site/`; it needs the `FIREBASE_SERVICE_ACCOUNT_LOOKPYRENEES_6E7E4` GitHub secret (created by `firebase init hosting:github`).
 - To preview locally: `cd site && python3 -m http.server 5000` (port 5000 is allowed by the CORS config).
 
+## Map: search a place and see a recent Sentinel-2 image
+Besides the predefined zones, the page `site/carte.html` lets you search a place in the Pyrenees (peak, pass, car park, village). The search goes through [Nominatim](https://nominatim.org/) (OpenStreetMap), restricted to the Pyrenees and triggered on validation (Enter / button). The page then shows, on top of an OSM map, the most recent usable Sentinel-2 image (cloud cover below the threshold) in a ~20 km x 20 km square around the place, with:
+- a toggle between true colour and NDSI (snow index, `(B03 - B11) / (B03 + B11)`, clouds and shadows are masked);
+- an opacity slider, a date selector (last 60 days, with cloud cover) and a download button.
+
+### Architecture
+```
+Browser (Firebase Hosting, static site)
+   ├─ Nominatim (place search)
+   └─ /api/*  ──(Firebase Hosting rewrite)──▶ Cloud Run "scene-api" (FastAPI)
+                                                ├─ STAC search + windowed COG reads
+                                                └─ result cache: GCS bucket
+```
+The API (`src/scene_api/`, image built from `Dockerfile.scene-api`, deployed with `infra/deploy_scene_api.sh`) is separate from the daily job. Endpoints: `GET /api/dates?lat=..&lon=..` and `GET /api/scene?lat=..&lon=..&date=YYYY-MM-DD&layer=color|ndsi`. The requested centre is rounded to a 5 km grid so that nearby searches share the same cached image. See `SPEC_CARTE.md` for the details.
+
+### Data sources and attributions
+- Imagery: [Microsoft Planetary Computer](https://planetarycomputer.microsoft.com/) (`sentinel-2-l2a`); fallback on [Earth Search](https://earth-search.aws.element84.com/v1) (AWS).
+- Contains modified Copernicus Sentinel-2 data.
+- Map and search: (c) OpenStreetMap contributors, search by Nominatim (usage policy: 1 request/s, no autocompletion).
+
+### Local development
+```
+uv sync --group scene-api
+uv run --group scene-api uvicorn scene_api.main:app --reload --port 8080
+uv run --group scene-api pytest tests/scene_api/
+```
+Serve the front with `cd site && python3 -m http.server 5000`, then open `http://localhost:5000/carte.html`. Add `?mock=1` to the URL to use fake data instead of the API (check `site/carte.html` / `site/carte.js` if the parameter has changed). To use the local API from the page, make it available under `/api` (e.g. with a reverse proxy) or adapt the base URL in the front.
+
+### Cost limits
+The target is at most 5 EUR/month. Cloud Run runs with `min-instances=0` and a small `max-instances`, the Firebase CDN caches API responses, images are cached in the bucket (objects under `scene/` deleted after 90 days), and the latitude/longitude must stay inside the Pyrenees bbox. Create the budget alert (50 %, 90 %, 100 % of 5 EUR) once with `./infra/setup_budget.sh --billing-account ID --email you@example.com` (add `--dry-run` to only print the commands). A budget only alerts, it does not stop spending.
+
 ## To be continued
 - When a zone is exactly between two product it raises an error, the objective is to fix this by merging two products which cover the zone concerned.
 - Add a super resolution algorithm in the workflow in order to imporve the spatial resolution
