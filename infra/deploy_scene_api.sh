@@ -22,9 +22,11 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "${DIR}")"
 
 # 1. Compte de service dédié (idempotent)
-gcloud iam service-accounts describe "${SA}" --project "${PROJECT}" >/dev/null 2>&1 \
-  || gcloud iam service-accounts create "${SA_NAME}" --project "${PROJECT}" \
-       --display-name "Cloud Run scene-api"
+if ! gcloud iam service-accounts describe "${SA}" --project "${PROJECT}" >/dev/null 2>&1; then
+  gcloud iam service-accounts create "${SA_NAME}" --project "${PROJECT}" \
+    --display-name "Cloud Run scene-api"
+  sleep 15  # propagation IAM : sans ça le binding qui suit peut répondre "service account does not exist"
+fi
 
 # Lecture/écriture/écrasement uniquement sous scene/ et stats/ (condition IAM, nécessite l'accès uniforme au niveau du bucket)
 gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" --project "${PROJECT}" \
