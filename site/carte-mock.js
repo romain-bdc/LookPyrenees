@@ -52,8 +52,9 @@ window.mockApi = async function (path, mode) {
   const half = 0.0905, hx = half / Math.cos(lat * Math.PI / 180);   // ±10 km environ
   const bbox = [lon - hx, lat - half, lon + hx, lat + half];
   if (u.pathname.endsWith("/api/dates")) {
-    const d = dates(mode);
-    return Response.json({ center: [lat, lon], bbox, default: d[0].date, dates: d });
+    const all = dates(mode), limit = +u.searchParams.get("limit") || all.length;
+    const d = all.slice(0, limit);   // limit : seulement les plus récentes, complete=false s'il en reste
+    return Response.json({ center: [lat, lon], bbox, default: d[0].date, dates: d, complete: limit >= all.length });
   }
   const png = u.searchParams.get("format") === "png";
   const blob = await image(u.searchParams.get("layer"), u.searchParams.get("date"), png ? "image/png" : "image/webp");

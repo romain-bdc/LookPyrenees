@@ -57,4 +57,4 @@ gcloud run deploy "${SERVICE}" --project "${PROJECT}" --region "${REGION}" \
   --allow-unauthenticated \
   --set-env-vars "SCENE_BUCKET=${BUCKET},STAC_SOURCE=${STAC_SOURCE}"
 
-echo "Done. Test: curl -s \$(gcloud run services describe ${SERVICE} --region ${REGION} --project ${PROJECT} --format='value(status.url)')/healthz"
+echo "Done. Test: curl -s \$(gcloud run services describe ${SERVICE} --region ${REGION} --project ${PROJECT} --format='value(status.url)')/api/health"
