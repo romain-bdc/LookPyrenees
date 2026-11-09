@@ -19,6 +19,10 @@ SITE = Path(__file__).resolve().parent.parent / "site"
 
 
 class Handler(SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store")  # dev : toujours recharger les fichiers du site
+        super().end_headers()
+
     def do_GET(self):
         if not self.path.startswith("/api/"):
             return super().do_GET()
