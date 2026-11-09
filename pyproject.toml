@@ -29,11 +29,24 @@ LookPyrenees = "LookPyrenees.cli:run"
 [dependency-groups]
 dev = [
     "pre-commit",
- "ruff",
+    "ruff",
+    "pytest",
+    "httpx",
+]
+scene-api = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pystac-client",
+    "rasterio",
+    "numpy",
+    "pillow",
+    "google-cloud-storage",
+    "pyproj",
+    "requests",
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/LookPyrenees"]
+packages = ["src/LookPyrenees", "src/scene_api"]
 
 [tool.ruff]
 line-length = 120
@@ -44,3 +57,11 @@ select = ["E", "F", "W", "I", "B", "C4", "C90", "PL"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 15
+
+[tool.pytest.ini_options]
+markers = ["network: tests needing network access (disabled by default, run with --run-network)"]
+addopts = "-m 'not network'"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["PLR2004"]
+"src/scene_api/**" = ["PLC0415", "PLR2004", "PLR0913", "PLR0917"]
