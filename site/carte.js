@@ -27,7 +27,9 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 17, minZoom: 6,
   attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
 }).addTo(map);
-map.attributionControl.addAttribution("Copernicus Sentinel-2");
+map.attributionControl.addAttribution('Images : Copernicus Sentinel-2 (modifiées) via Microsoft Planetary Computer ; lieux : <a href="https://nominatim.org/" target="_blank" rel="noopener">Nominatim</a>');
+
+new ResizeObserver(() => map.invalidateSize()).observe($("map"));   // la barre de réglages change la hauteur de la carte
 
 let marker = null, overlay = null;
 let point = null, data = null, layer = "color";
@@ -152,7 +154,7 @@ async function completeDates(sel, base) {
     const current = $("date").value;   // l'utilisateur a pu changer de date entre-temps
     data = full;
     fillDates();
-    $("date").value = current;
+    markDate(current);
   } catch (err) { /* la liste partielle reste utilisable */ }
 }
 
@@ -188,15 +190,42 @@ function bestDate() {
   return pool.reduce((a, b) => (b.cloud_pct < a.cloud_pct ? b : a)).date;
 }
 
+// Frise des dates, de la plus ancienne (gauche) à la plus récente : une barre empilée par date
+// (nuages en haut, neige en bas, le reste = sol dégagé). Le <select> caché reste la valeur de référence.
 function fillDates() {
-  const sel = $("date");
+  const sel = $("date"), strip = $("strip");
   sel.replaceChildren();
-  for (const d of data.dates) {
+  strip.replaceChildren();
+  let lastMonth = "";
+  for (const d of [...data.dates].reverse()) {
     const o = document.createElement("option");
     o.value = d.date;
-    o.textContent = `${fmtDate(d.date)} · nuages ${pct(d.cloud_pct)} · couverture ${pct(d.data_pct)}` +
-      (d.data_pct < DATA_MIN ? " (faible)" : "");
+    o.textContent = fmtDate(d.date);
     sel.append(o);
+
+    const when = new Date(d.date + "T12:00:00");
+    const month = when.toLocaleDateString("fr-FR", { month: "short" }).replace(".", "");
+    const b = document.createElement("button");
+    b.type = "button";
+    b.dataset.date = d.date;
+    b.className = "day" + (d.data_pct < DATA_MIN ? " partial" : "");
+    b.title = `${fmtDate(d.date)} : nuages ${pct(d.cloud_pct)}, neige ${pct(d.snow_pct)}, couverture ${pct(d.data_pct)}` +
+      (d.data_pct < DATA_MIN ? " (faible)" : "");
+    b.innerHTML = `<span class="col"><i class="cl" style="height:${Math.min(d.cloud_pct, 100)}%"></i>` +
+      `<i class="sn" style="height:${Math.min(d.snow_pct, 100)}%"></i></span>` +
+      `<span class="lab">${when.getDate()}${month !== lastMonth ? `<small>${month}</small>` : ""}</span>`;
+    lastMonth = month;
+    b.addEventListener("click", () => showScene(d.date));
+    strip.append(b);
+  }
+}
+
+function markDate(date) {
+  $("date").value = date;
+  for (const b of $("strip").children) {
+    const on = b.dataset.date === date;
+    b.setAttribute("aria-pressed", on);
+    if (on) b.scrollIntoView({ inline: "center", block: "nearest" });
   }
 }
 
@@ -210,7 +239,7 @@ function clearOverlay() {
 async function showScene(date) {
   const id = ++seq;
   const entry = data.dates.find((d) => d.date === date);
-  $("date").value = date;
+  markDate(date);
   updateWarning(entry);
   const key = date + "|" + layer;
   let objUrl = sceneUrls.get(key);
@@ -248,7 +277,6 @@ function updateWarning(d) {
 }
 
 // --- Contrôles ---
-$("date").addEventListener("change", (e) => showScene(e.target.value));
 $("opacity").addEventListener("input", (e) => { if (overlay) overlay.setOpacity(e.target.value / 100); });
 document.querySelectorAll("[data-layer]").forEach((b) => b.addEventListener("click", () => {
   layer = b.dataset.layer;
