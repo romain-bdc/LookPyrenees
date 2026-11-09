@@ -7,53 +7,49 @@
 <meta name="description" content="Cherchez un lieu des Pyrénées et voyez l'image Sentinel-2 récente autour, en couleur ou en neige (NDSI).">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@500;600&display=swap">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="carte.css">
 </head>
 <body class="carte">
-<header>
-  <a href="./" class="brand">Look Pyrénées</a>
-  <span class="muted">Carte Sentinel-2</span>
-</header>
-<main>
-  <form id="search" role="search" class="controls">
+<header class="top">
+  <a href="./" class="brand"><span class="blaze" aria-hidden="true"></span>Look Pyrénées</a>
+  <form id="search" role="search">
     <label for="q" class="sr-only">Lieu à chercher dans les Pyrénées</label>
     <input id="q" type="search" placeholder="Pic, col, parking, village… ou cliquez sur la carte" autocomplete="off" required>
     <button type="submit" id="search-btn">Chercher</button>
+    <ul id="results" class="results" hidden></ul>
   </form>
-  <ul id="results" class="results" hidden></ul>
-
-  <div id="status" role="status" aria-live="polite"></div>
-
+</header>
+<main>
   <section id="panel" class="panel" hidden aria-label="Réglages de l'image">
-    <div class="controls">
+    <div class="bar-row">
       <div class="seg" role="group" aria-label="Couche">
         <button type="button" data-layer="color" class="on" aria-pressed="true">Couleur</button>
         <button type="button" data-layer="ndsi" aria-pressed="false">Neige (NDSI)</button>
       </div>
-      <label>Date
-        <select id="date"></select>
-      </label>
-      <label class="grow">Opacité
+      <div class="timeline" role="group" aria-label="Date de l'image">
+        <ul class="key" aria-hidden="true"><li class="k-cloud">nuages</li><li class="k-snow">neige</li></ul>
+        <div id="strip" class="strip"></div>
+      </div>
+      <label class="opacity">Opacité
         <input id="opacity" type="range" min="0" max="100" value="85">
       </label>
       <button type="button" id="download">Télécharger (PNG)</button>
     </div>
+    <select id="date" hidden aria-hidden="true" tabindex="-1"></select>
     <p id="warn" class="warn" hidden></p>
-    <p id="legend" class="muted" hidden>NDSI : les zones enneigées sont en bleu ; nuages et ombres sont masqués.</p>
+    <p id="legend" class="note" hidden>NDSI : les zones enneigées sont en bleu ; nuages et ombres sont masqués.</p>
   </section>
+
+  <div id="status" role="status" aria-live="polite"></div>
 
   <div class="map-wrap">
     <div id="map" aria-label="Carte des Pyrénées"></div>
     <div id="skeleton" class="skeleton" hidden aria-hidden="true"></div>
   </div>
-
-
-  <p class="muted credits">
-    Fond de carte © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">contributeurs OpenStreetMap</a> ·
-    Recherche de lieux : Nominatim ·
-    Images : Copernicus Sentinel-2 (modifiées), via Microsoft Planetary Computer.
-  </p>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
