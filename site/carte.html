@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="carte.css">
 </head>
-<body>
+<body class="carte">
 <header>
   <a href="./" class="brand">Look Pyrénées</a>
   <span class="muted">Carte Sentinel-2</span>
@@ -18,18 +18,12 @@
 <main>
   <form id="search" role="search" class="controls">
     <label for="q" class="sr-only">Lieu à chercher dans les Pyrénées</label>
-    <input id="q" type="search" placeholder="Pic, col, parking, village… (Entrée pour chercher)" autocomplete="off" required>
+    <input id="q" type="search" placeholder="Pic, col, parking, village… ou cliquez sur la carte" autocomplete="off" required>
     <button type="submit" id="search-btn">Chercher</button>
   </form>
   <ul id="results" class="results" hidden></ul>
-  <p class="muted hint">Ou cliquez directement sur la carte pour choisir un point.</p>
 
   <div id="status" role="status" aria-live="polite"></div>
-
-  <div class="map-wrap">
-    <div id="map" aria-label="Carte des Pyrénées"></div>
-    <div id="skeleton" class="skeleton" hidden aria-hidden="true"></div>
-  </div>
 
   <section id="panel" class="panel" hidden aria-label="Réglages de l'image">
     <div class="controls">
@@ -48,6 +42,12 @@
     <p id="warn" class="warn" hidden></p>
     <p id="legend" class="muted" hidden>NDSI : les zones enneigées sont en bleu ; nuages et ombres sont masqués.</p>
   </section>
+
+  <div class="map-wrap">
+    <div id="map" aria-label="Carte des Pyrénées"></div>
+    <div id="skeleton" class="skeleton" hidden aria-hidden="true"></div>
+  </div>
+
 
   <p class="muted credits">
     Fond de carte © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">contributeurs OpenStreetMap</a> ·
