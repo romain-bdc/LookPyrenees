@@ -102,7 +102,7 @@ uv sync --group scene-api
 uv run --group scene-api uvicorn scene_api.main:app --reload --port 8080
 uv run --group scene-api pytest tests/scene_api/
 ```
-Serve the front with `cd site && python3 -m http.server 5000`, then open `http://localhost:5000/carte.html`. Add `?mock=1` to the URL to use fake data instead of the API (check `site/carte.html` / `site/carte.js` if the parameter has changed). To use the local API from the page, make it available under `/api` (e.g. with a reverse proxy) or adapt the base URL in the front.
+Serve the front and forward `/api/*` to the API with `python3 dev/serve.py` (local API on port 8080 by default, or `API_URL=https://<cloud-run-url>` for the deployed service), then open `http://localhost:5000/carte.html`. Add `?mock=1` to the URL to use fake data instead of the API.
 
 ### Cost limits
 The target is at most 5 EUR/month. Cloud Run runs with `min-instances=0` and a small `max-instances`, the Firebase CDN caches API responses, images are cached in the bucket (objects under `scene/` deleted after 90 days), and the latitude/longitude must stay inside the Pyrenees bbox. Create the budget alert (50 %, 90 %, 100 % of 5 EUR) once with `./infra/setup_budget.sh --billing-account ID --email you@example.com` (add `--dry-run` to only print the commands). A budget only alerts, it does not stop spending.

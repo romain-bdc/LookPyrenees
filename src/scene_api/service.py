@@ -74,12 +74,18 @@ class SceneService:
         return [i for i in items if i.cloud_cover is None or i.cloud_cover <= self.s.prefilter_cloud]
 
     # -- API ---------------------------------------------------------------------------------
-    def dates(self, lat: float, lon: float, now: datetime | None = None) -> dict:
+    def dates(self, lat: float, lon: float, now: datetime | None = None, limit: int | None = None) -> dict:
+        """`limit` : ne traite que les `limit` items les plus recents (reponse rapide ; `complete` vaut alors False
+        s'il en reste). Les stats sont mises en cache par item, un appel complet ensuite ne les recalcule pas."""
         now = now or datetime.now(UTC)
         window = window_for(lat, lon)
-        items = self._search(window, now - timedelta(days=self.s.lookback_days), now)
-        entries = self._entries(items, window)
+        items = sorted(
+            self._search(window, now - timedelta(days=self.s.lookback_days), now), key=lambda i: i.date, reverse=True
+        )
+        complete = limit is None or len(items) <= limit
+        entries = self._entries(items if complete else items[:limit], window)
         return {
+            "complete": complete,
             "center": [lat, lon],
             "bbox": list(window.bbox),
             "default": proc.choose_default(entries, self.s.cloud_threshold, self.s.min_data_pct),

@@ -71,7 +71,7 @@ def create_app(settings: Settings | None = None, service: SceneService | None = 
             holder["svc"] = SceneService(settings, make_cache(settings), StacSearcher(settings.source), reader)
         return holder["svc"]
 
-    def limit(request: Request) -> None:
+    def rate_limit(request: Request) -> None:
         wait = limiter.check(client_ip(request))
         if wait is not None:
             raise HTTPException(429, "Trop de requetes", headers={"Retry-After": str(int(wait) + 1)})
@@ -80,15 +80,20 @@ def create_app(settings: Settings | None = None, service: SceneService | None = 
     async def _bad_request(_: Request, exc: RequestValidationError):
         return JSONResponse({"detail": "parametre invalide", "errors": [e["loc"][-1] for e in exc.errors()]}, 400)
 
-    @app.get("/healthz")
-    def healthz():
+    @app.get("/api/health")  # pas /healthz : chemin reserve par le frontal de Cloud Run
+    def health():
         return {"status": "ok"}
 
     @app.get("/api/dates")
-    def dates(request: Request, lat: float = Query(), lon: float = Query()):
+    def dates(
+        request: Request,
+        lat: float = Query(),
+        lon: float = Query(),
+        limit: int | None = Query(None, ge=1, le=100),
+    ):
         validate_point(lat, lon, bbox)
-        limit(request)
-        out = svc().dates(lat, lon)
+        rate_limit(request)
+        out = svc().dates(lat, lon, limit=limit)
         return JSONResponse(out, headers={"Cache-Control": f"public, max-age={settings.dates_max_age}"})
 
     @app.get("/api/scene")
@@ -102,7 +107,7 @@ def create_app(settings: Settings | None = None, service: SceneService | None = 
     ):
         validate_point(lat, lon, bbox)
         validate_date(date, settings.lookback_days)
-        limit(request)
+        rate_limit(request)
         try:
             data, ctype, window = svc().scene(lat, lon, date, layer, format)
         except NoSceneError as e:

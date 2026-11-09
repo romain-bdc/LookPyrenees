@@ -4,6 +4,7 @@
 const PYR_BBOX = [-2.0, 42.0, 3.2, 43.5];
 const CLOUD_MAX = 20;   // % : seuil de la spec pour la date par défaut
 const DATA_MIN = 50;    // % : couverture minimale
+const QUICK_ITEMS = 8;    // scènes évaluées pour la première réponse rapide
 const NOMINATIM_DELAY_MS = 1100;  // politique d'usage : 1 requête/s max
 
 const $ = (id) => document.getElementById(id);
@@ -30,6 +31,7 @@ map.attributionControl.addAttribution("Copernicus Sentinel-2");
 
 let marker = null, overlay = null;
 let point = null, data = null, layer = "color";
+let selection = 0;                 // identifie le point choisi (les dates complètes arrivent après coup)
 let seq = 0;                       // invalide les réponses d'une sélection plus ancienne
 const sceneUrls = new Map();       // "date|layer" -> URL objet (évite de re-télécharger)
 
@@ -97,6 +99,7 @@ map.on("click", (e) => { $("results").hidden = true; selectPoint(e.latlng.lat, e
 // --- Sélection d'un point et chargement des dates ---
 async function selectPoint(lat, lon) {
   const id = ++seq;
+  const sel = ++selection;
   point = { lat, lon };
   data = null;
   clearOverlay();
@@ -109,12 +112,23 @@ async function selectPoint(lat, lon) {
 
   busy(true);
   setStatus("Recherche des images disponibles… (quelques secondes, jusqu'à 20 s la première fois)");
+  const base = `/api/dates?lat=${lat.toFixed(5)}&lon=${lon.toFixed(5)}`;
+  const fetchDates = async (query) => {
+    const res = await api(base + query);
+    if (id !== seq) return null;
+    if (!res.ok) { failure(res.status, () => selectPoint(lat, lon)); return null; }
+    const json = await res.json();
+    return id === seq ? json : null;
+  };
   try {
-    const res = await api(`/api/dates?lat=${lat.toFixed(5)}&lon=${lon.toFixed(5)}`);
-    if (id !== seq) return;
-    if (!res.ok) return failure(res.status, () => selectPoint(lat, lon));
-    data = await res.json();
-    if (id !== seq) return;
+    // 1) réponse rapide sur les scènes les plus récentes ; 2) liste complète en arrière-plan
+    data = await fetchDates(`&limit=${QUICK_ITEMS}`);
+    if (!data) return;
+    if (data.complete === false && !hasGoodDate(data)) {
+      setStatus("Aucune image récente assez dégagée parmi les premières : analyse de toute la période…");
+      data = await fetchDates("");
+      if (!data) return;
+    }
   } catch (err) {
     if (id === seq) failure(0, () => selectPoint(lat, lon));
     return;
@@ -122,7 +136,29 @@ async function selectPoint(lat, lon) {
   if (!data.dates || !data.dates.length) return failure(404);
   fillDates();
   panel.hidden = false;
-  showScene(data.default || bestDate());
+  const first = data.default || bestDate();
+  const shown = showScene(first);
+  if (data.complete === false) completeDates(sel, base);
+  return shown;
+}
+
+// Complète la liste des dates sans toucher à l'image affichée.
+async function completeDates(sel, base) {
+  try {
+    const res = await api(base);
+    if (!res.ok || sel !== selection) return;
+    const full = await res.json();
+    if (sel !== selection) return;
+    const current = $("date").value;   // l'utilisateur a pu changer de date entre-temps
+    data = full;
+    fillDates();
+    $("date").value = current;
+  } catch (err) { /* la liste partielle reste utilisable */ }
+}
+
+// Une date récente exploitable (peu de nuages, bonne couverture) suffit pour afficher sans attendre.
+function hasGoodDate(d) {
+  return d.dates.some((e) => e.cloud_pct < CLOUD_MAX && e.data_pct >= DATA_MIN);
 }
 
 function outside() {
