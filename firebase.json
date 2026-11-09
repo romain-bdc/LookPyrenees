@@ -8,6 +8,12 @@
         "source": "**/*.@(js|css|html)",
         "headers": [{ "key": "Cache-Control", "value": "public, max-age=300" }]
       }
+    ],
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "run": { "serviceId": "scene-api", "region": "europe-west1" }
+      }
     ]
   }
 }

@@ -1,0 +1,54 @@
+name: deploy-scene-api
+
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - 'src/scene_api/**'
+    - 'Dockerfile.scene-api'
+    - 'pyproject.toml'
+    - 'uv.lock'
+    - '.github/workflows/deploy-scene-api.yml'
+
+env:
+  SERVICE: scene-api
+  PROJECT_ID: lookpyrenees
+  REGION: europe-west1
+  BUCKET: pyrenees_images
+
+jobs:
+  deploy:
+    name: Build, push and deploy scene-api
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - id: "auth"
+      uses: "google-github-actions/auth@v1"
+      with:
+        credentials_json: "${{ secrets.GCP_SA_KEY }}"
+
+    - name: "Set up Cloud SDK"
+      uses: "google-github-actions/setup-gcloud@v1"
+
+    - name: "Docker auth"
+      run: |-
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+    - name: Build image
+      run: |
+        docker build -f Dockerfile.scene-api . \
+          --tag ${{env.REGION}}-docker.pkg.dev/${{env.PROJECT_ID}}/images/${{env.SERVICE}}:${{ github.sha }} \
+          --tag ${{env.REGION}}-docker.pkg.dev/${{env.PROJECT_ID}}/images/${{env.SERVICE}}:latest
+
+    - name: Push image
+      run: docker push --all-tags ${{env.REGION}}-docker.pkg.dev/${{env.PROJECT_ID}}/images/${{env.SERVICE}}
+
+    - name: Deploy to Cloud Run
+      run: |
+        gcloud run deploy ${{env.SERVICE}} \
+          --image ${{env.REGION}}-docker.pkg.dev/${{env.PROJECT_ID}}/images/${{env.SERVICE}}:${{ github.sha }} \
+          --region ${{env.REGION}} \
+          --project ${{env.PROJECT_ID}}
