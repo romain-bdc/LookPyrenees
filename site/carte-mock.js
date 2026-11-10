@@ -56,7 +56,7 @@ window.mockApi = async function (path, mode) {
     const d = all.slice(0, limit);   // limit : seulement les plus récentes, complete=false s'il en reste
     return Response.json({ center: [lat, lon], bbox, default: d[0].date, dates: d, complete: limit >= all.length });
   }
-  const png = u.searchParams.get("format") === "png";
+  const png = ["png", "tif"].includes(u.searchParams.get("format"));
   const blob = await image(u.searchParams.get("layer"), u.searchParams.get("date"), png ? "image/png" : "image/webp");
   return new Response(blob, { headers: { "X-Bbox": bbox.join(",") } });
 };

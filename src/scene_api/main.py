@@ -103,7 +103,7 @@ def create_app(settings: Settings | None = None, service: SceneService | None = 
         lon: float = Query(),
         date: str = Query(),
         layer: Literal["color", "ndsi"] = Query(),
-        format: Literal["webp", "png"] = Query("webp"),
+        format: Literal["webp", "png", "tif"] = Query("webp"),
     ):
         validate_point(lat, lon, bbox)
         validate_date(date, settings.lookback_days)

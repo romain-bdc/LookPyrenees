@@ -54,7 +54,7 @@ Renvoie les scènes des 60 derniers jours couvrant la fenêtre.
 `cloud_pct` est calculé **sur la fenêtre** via la couche SCL (classes 3, 8, 9, 10), pas via le `eo:cloud_cover` de toute la tuile : l'écart est grand (mesuré : tuile 26 % contre 59,7 % dans la fenêtre à Canigou). Ce `eo:cloud_cover` (propriété de l'item STAC) sert seulement de pré-filtre bon marché : on écarte les scènes à plus de 90 % de nuages avant de lire le moindre pixel. Chaque entrée de `dates` contient aussi `data_pct` (voir §5).
 
 ### `GET /api/scene?lat=..&lon=..&date=YYYY-MM-DD&layer=color|ndsi`
-Renvoie une image WebP (et PNG si `format=png`) avec en-tête `X-Bbox`. Erreurs : 400 hors Pyrénées ou paramètre invalide, 404 aucune scène, 429 limite atteinte.
+Renvoie une image WebP (`format=png` : PNG sans perte ; `format=tif` : GeoTIFF géoréférencé, EPSG:4326, pour QGIS), toutes à la résolution native de 10 m avec en-tête `X-Bbox`. Erreurs : 400 hors Pyrénées ou paramètre invalide, 404 aucune scène, 429 limite atteinte.
 
 ## 5. Traitement
 
@@ -69,7 +69,7 @@ Renvoie une image WebP (et PNG si `format=png`) avec en-tête `X-Bbox`. Erreurs 
 
 ## 6. Cache
 
-- Clé : `scene/<item_id>/<layer>/<cx>_<cy>.webp` ; les statistiques par item et fenêtre (`cloud_pct`, `snow_pct`, `data_pct`) sont mises en cache en JSON sous `stats/<item_id>/<cx>_<cy>.json` (cx, cy = centre arrondi en mètres UTM).
+- Clé : `scene/v2/<item_id>/<layer>/<cx>_<cy>.<webp|png|tif>` (`v2` = version du rendu : pleine résolution, à incrémenter si le rendu change) ; les statistiques par item et fenêtre (`cloud_pct`, `snow_pct`, `data_pct`) sont mises en cache en JSON sous `stats/<item_id>/<cx>_<cy>.json` (cx, cy = centre arrondi en mètres UTM).
 - Avant tout calcul, vérification de l'existence dans le bucket. Sinon calcul, écriture, réponse.
 - En-têtes : `Cache-Control: public, max-age=31536000, immutable` pour les images (un item Sentinel-2 ne change pas), 1 h pour `/api/dates`.
 - Règle de cycle de vie du bucket : suppression des objets `scene/` après 90 jours.

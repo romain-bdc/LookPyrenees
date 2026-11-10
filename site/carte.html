@@ -30,21 +30,28 @@
         <button type="button" data-layer="color" class="on" aria-pressed="true">Couleur</button>
         <button type="button" data-layer="ndsi" aria-pressed="false">Neige (NDSI)</button>
       </div>
-      <div class="timeline" role="group" aria-label="Date de l'image">
-        <ul class="key" aria-hidden="true"><li class="k-cloud">nuages</li><li class="k-snow">neige</li></ul>
+      <div class="timeline" role="group" aria-labelledby="tl-label">
+        <p id="tl-label" class="tl-label">Date de l'image satellite <small>plus c'est gris, plus il y a de nuages</small></p>
         <div id="strip" class="strip"></div>
       </div>
       <label class="opacity">Opacité
         <input id="opacity" type="range" min="0" max="100" value="85">
       </label>
-      <button type="button" id="download">Télécharger (PNG)</button>
+      <div class="dl" role="group" aria-label="Télécharger l'image">
+        <span>Télécharger</span>
+        <button type="button" data-fmt="png" title="PNG sans perte, pleine résolution (10 m)">PNG</button>
+        <button type="button" data-fmt="tif" title="GeoTIFF géoréférencé sans perte, pour QGIS">GeoTIFF</button>
+      </div>
     </div>
     <select id="date" hidden aria-hidden="true" tabindex="-1"></select>
     <p id="warn" class="warn" hidden></p>
     <p id="legend" class="note" hidden>NDSI : les zones enneigées sont en bleu ; nuages et ombres sont masqués.</p>
   </section>
 
-  <div id="status" role="status" aria-live="polite"></div>
+  <div class="statusbar">
+    <div id="progress" class="progress" hidden aria-hidden="true"></div>
+    <div id="status" role="status" aria-live="polite"></div>
+  </div>
 
   <div class="map-wrap">
     <div id="map" aria-label="Carte des Pyrénées"></div>

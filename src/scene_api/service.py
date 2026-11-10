@@ -103,7 +103,7 @@ class SceneService:
         item = next(i for i in items if i.id == entries[0]["item"])
 
         key = scene_key(item.id, layer, window.key, fmt)
-        ctype = "image/png" if fmt == "png" else "image/webp"
+        ctype = {"png": "image/png", "tif": "image/tiff"}.get(fmt, "image/webp")
         cached = self.cache.get(key)
         if cached is not None:
             return cached, ctype, window
@@ -117,4 +117,4 @@ class SceneService:
         else:
             scl, g, s = self._bands(item, window, FULL_PX)
             rgba = proc.render_ndsi(proc.ndsi(g, s), scl, self.s.ndsi_threshold, g)
-        return proc.encode(proc.resize_max(rgba), fmt)
+        return proc.encode(proc.resize_max(rgba), fmt, window.bbox)

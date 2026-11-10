@@ -51,31 +51,40 @@
 .opacity { display: flex; align-items: center; gap: 8px; font-size: .9rem; color: var(--muted); }
 .opacity input { width: 110px; accent-color: var(--ice); }
 
-/* Frise des dates */
-.timeline { flex: 1 1 320px; min-width: 0; display: flex; align-items: flex-end; gap: 12px; }
-.key { list-style: none; margin: 0; padding: 0 0 4px; display: grid; gap: 2px; font-size: .72rem; color: var(--muted); }
-.key li::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: 1px; background: var(--cloud); }
-.key .k-snow::before { background: var(--ice); }
-.strip { flex: 1; min-width: 0; display: flex; gap: 2px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
-.carte .day { flex: none; width: 34px; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 0 3px; border: 0; border-radius: 3px; background: none; }
-.carte .day:hover:not(:disabled) { background: var(--bg); }
-.day .col { position: relative; display: flex; flex-direction: column; justify-content: space-between; width: 14px; height: 40px; background: var(--ground); border-radius: 2px; overflow: hidden; }
-.day .cl, .day .sn { display: block; width: 100%; }
-.day .cl { background: var(--cloud); }
-.day .sn { background: var(--ice); }
-.day.partial .col { background: repeating-linear-gradient(135deg, var(--ground) 0 3px, transparent 3px 6px); outline: 1px dashed var(--muted); outline-offset: -1px; }
-.day .lab { font: 500 .8rem/1 "Barlow Semi Condensed", sans-serif; color: var(--muted); text-align: center; }
-.day .lab small { display: block; font-size: .68rem; margin-top: 1px; }
-.day[aria-pressed=true] { background: var(--bg); box-shadow: inset 0 -3px 0 var(--blaze); }
-.day[aria-pressed=true] .lab { color: var(--fg); font-weight: 600; }
+/* Sélecteur de dates : une pastille par image, d'autant plus grise qu'elle est nuageuse */
+.timeline { flex: 1 1 320px; min-width: 0; }
+.tl-label { margin: 0 0 4px; font-size: .85rem; font-weight: 500; }
+.tl-label small { margin-left: 8px; font-weight: 400; color: var(--muted); }
+.strip { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+.carte .day {
+  flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; min-width: 88px; padding: 5px 10px; text-align: left;
+  background: color-mix(in srgb, var(--cloud) var(--c, 0%), var(--card)); border-color: var(--rule);
+}
+.day .d { font: 600 1rem/1.2 "Barlow Semi Condensed", sans-serif; }
+.day .s { font-size: .75rem; color: var(--muted); }
+.day.partial { border-style: dashed; border-color: var(--muted); }
+.carte .day[aria-pressed=true] { background: var(--ink); border-color: var(--ink); box-shadow: inset 0 -3px 0 var(--blaze); }
+.day[aria-pressed=true] .d { color: #f1f4f7; }
+.day[aria-pressed=true] .s { color: #c6d2dd; }
+@media (prefers-color-scheme: dark) { .carte .day[aria-pressed=true] { background: #e5ecf2; border-color: #e5ecf2; } .day[aria-pressed=true] .d { color: #0f1923; } .day[aria-pressed=true] .s { color: #35485a; } }
+
+.dl { display: flex; align-items: center; gap: 6px; font-size: .9rem; color: var(--muted); }
+.dl span { margin-right: 2px; }
 
 .warn { margin: 8px 0 0; padding: 2px 0 2px 10px; border-left: 3px solid var(--blaze); font-size: .92rem; }
 .note { margin: 6px 0 0; font-size: .85rem; color: var(--muted); }
 
-#status:empty { display: none; }
-#status { padding: 6px 16px; font-size: .9rem; color: var(--muted); background: var(--bg); border-bottom: 1px solid var(--rule); }
+/* Chargement : barre indéterminée à côté du message (la durée réelle n'est pas connue) */
+.statusbar { display: flex; align-items: center; gap: 14px; padding: 0 16px; background: var(--bg); border-bottom: 1px solid var(--rule); }
+.statusbar:has(#status:empty):has(.progress[hidden]) { display: none; }
+#status { padding: 7px 0; font-size: .9rem; color: var(--muted); }
 #status.error { color: var(--blaze); }
 #status button { margin-left: 8px; }
+.progress { flex: none; width: 140px; height: 4px; border-radius: 2px; background: var(--rule); overflow: hidden; position: relative; }
+.progress::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 40%; background: var(--ice); border-radius: 2px; animation: slide 1.2s ease-in-out infinite; }
+.progress[hidden] { display: none; }
+@keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(350%); } }
+@media (prefers-reduced-motion: reduce) { .progress::after { animation: none; width: 100%; opacity: .5; } }
 
 .map-wrap { position: relative; flex: 1; min-height: 360px; }
 #map { position: absolute; inset: 0; background: var(--glacier); }
@@ -87,5 +96,6 @@
   .carte .top { flex-wrap: wrap; gap: 8px; }
   #search { flex: 1 1 100%; max-width: none; }
   .timeline { flex-basis: 100%; order: 3; }
+  .tl-label small { display: block; margin-left: 0; }
   .opacity input { width: 80px; }
 }
