@@ -92,7 +92,7 @@ def test_stats_are_cached(env):
 
 
 @pytest.mark.parametrize("layer", ["color", "ndsi"])
-@pytest.mark.parametrize(("fmt", "ctype"), [("webp", "image/webp"), ("png", "image/png")])
+@pytest.mark.parametrize(("fmt", "ctype"), [("webp", "image/webp"), ("png", "image/png"), ("tif", "image/tiff")])
 def test_scene_ok_and_cached(env, layer, fmt, ctype):
     client, cache, _, reader = env
     p = {"lat": 42.78, "lon": 1.32, "date": day(3), "layer": layer, "format": fmt}
@@ -101,7 +101,7 @@ def test_scene_ok_and_cached(env, layer, fmt, ctype):
     assert r.headers["content-type"] == ctype
     assert r.headers["cache-control"] == IMMUTABLE
     assert len(r.headers["x-bbox"].split(",")) == 4
-    key = f"scene/A/{layer}/365000_4740000.{fmt}"
+    key = f"scene/v2/A/{layer}/365000_4740000.{fmt}"
     assert key in cache.keys() and cache.meta(key) == (ctype, IMMUTABLE)
     n = len(reader.calls)
     assert client.get("/api/scene", params=p).content == r.content

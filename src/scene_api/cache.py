@@ -15,8 +15,11 @@ class CacheBackend(Protocol):
     def put(self, key: str, data: bytes, content_type: str, cache_control: str | None = None) -> None: ...
 
 
+RENDER_VERSION = "v2"  # a incrementer quand le rendu change (v2 : pleine resolution, WebP q92, GeoTIFF)
+
+
 def scene_key(item_id: str, layer: str, window_key: str, fmt: str = "webp") -> str:
-    return f"scene/{item_id}/{layer}/{window_key}.{fmt}"
+    return f"scene/{RENDER_VERSION}/{item_id}/{layer}/{window_key}.{fmt}"
 
 
 def stats_key(item_id: str, window_key: str) -> str:

@@ -7,11 +7,12 @@ from collections.abc import Sequence
 
 import numpy as np
 from PIL import Image
+from rasterio.enums import ColorInterp
 
 CLOUD_CLASSES = (3, 8, 9, 10)  # ombre de nuage, nuage moyen/fort probabilite, cirrus
 NDSI_THRESHOLD = 0.4
 MIN_GREEN_REFLECTANCE = 0.1  # critere usuel : ecarte les pixels sombres (ombre) ou le NDSI est du bruit
-MAX_DISPLAY_PX = 1600
+MAX_DISPLAY_PX = 2000  # = resolution native (10 m sur 20 km) : plus de reduction
 
 
 def ndsi(green: np.ndarray, swir: np.ndarray) -> np.ndarray:
@@ -92,13 +93,31 @@ def resize_max(rgba: np.ndarray, max_px: int = MAX_DISPLAY_PX) -> np.ndarray:
     return np.asarray(im)
 
 
-def encode(rgba: np.ndarray, fmt: str = "webp") -> tuple[bytes, str]:
+def encode_geotiff(rgba: np.ndarray, bbox: tuple[float, float, float, float]) -> tuple[bytes, str]:
+    """GeoTIFF RGBA 8 bits sans perte (EPSG:4326, emprise `bbox`), utilisable tel quel dans QGIS."""
+    from rasterio.io import MemoryFile
+    from rasterio.transform import from_bounds
+
+    h, w = rgba.shape[:2]
+    with MemoryFile() as mem:
+        with mem.open(
+            driver="GTiff", width=w, height=h, count=4, dtype="uint8", crs="EPSG:4326",
+            transform=from_bounds(*bbox, w, h), compress="deflate", predictor=2, tiled=True,
+        ) as dst:
+            dst.write(np.moveaxis(rgba, -1, 0))
+            dst.colorinterp = [ColorInterp.red, ColorInterp.green, ColorInterp.blue, ColorInterp.alpha]
+        return mem.read(), "image/tiff"
+
+
+def encode(rgba: np.ndarray, fmt: str = "webp", bbox: tuple[float, float, float, float] | None = None) -> tuple[bytes, str]:
+    if fmt == "tif":
+        return encode_geotiff(rgba, bbox)
     buf = io.BytesIO()
     im = Image.fromarray(rgba, "RGBA")
     if fmt == "png":
         im.save(buf, "PNG", optimize=True)
         return buf.getvalue(), "image/png"
-    im.save(buf, "WEBP", quality=85, method=4)
+    im.save(buf, "WEBP", quality=92, method=4)
     return buf.getvalue(), "image/webp"
 
 
