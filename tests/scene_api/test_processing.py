@@ -57,8 +57,9 @@ def test_render_color_alpha_from_nodata():
 
 def test_resize_and_encode_roundtrip():
     rgba = np.full((2000, 1800, 4), 255, dtype=np.uint8)
-    small = p.resize_max(rgba)
-    assert small.shape[:2] == (1600, 1440)
+    assert p.resize_max(rgba).shape[:2] == (2000, 1800)  # resolution native : pas de reduction
+    small = p.resize_max(np.full((2400, 2160, 4), 255, dtype=np.uint8))
+    assert small.shape[:2] == (2000, 1800)
     data, ctype = p.encode(small[:50, :50].copy(), "webp")
     assert ctype == "image/webp" and data[:4] == b"RIFF"
     data, ctype = p.encode(small[:50, :50].copy(), "png")
@@ -97,3 +98,17 @@ def test_snow_mask_ignores_dark_pixels_with_noisy_ndsi():
     nd = p.ndsi(green, swir)
     assert p.snow_mask(nd, scl).tolist() == [True, True]
     assert p.snow_mask(nd, scl, green=green).tolist() == [False, True]
+
+
+def test_geotiff_is_georeferenced_and_lossless():
+    import io
+
+    import rasterio
+
+    rgba = np.random.default_rng(0).integers(0, 255, (40, 50, 4), dtype=np.uint8)
+    data, ctype = p.encode(rgba, "tif", (0.5, 42.5, 0.75, 42.7))
+    assert ctype == "image/tiff"
+    with rasterio.open(io.BytesIO(data)) as ds:
+        assert ds.crs.to_epsg() == 4326 and (ds.width, ds.height, ds.count) == (50, 40, 4)
+        assert tuple(round(v, 4) for v in ds.bounds) == (0.5, 42.5, 0.75, 42.7)
+        assert (ds.read() == np.moveaxis(rgba, -1, 0)).all()

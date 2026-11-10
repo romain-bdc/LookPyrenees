@@ -41,7 +41,7 @@ function setStatus(html, kind) {
   statusBox.className = kind || "";
   statusBox.innerHTML = html;
 }
-function busy(on) { skeleton.hidden = !on; }
+function busy(on) { skeleton.hidden = !on; $("progress").hidden = !on; }
 function inPyrenees(lat, lon) {
   return lon >= PYR_BBOX[0] && lon <= PYR_BBOX[2] && lat >= PYR_BBOX[1] && lat <= PYR_BBOX[3];
 }
@@ -190,31 +190,28 @@ function bestDate() {
   return pool.reduce((a, b) => (b.cloud_pct < a.cloud_pct ? b : a)).date;
 }
 
-// Frise des dates, de la plus ancienne (gauche) à la plus récente : une barre empilée par date
-// (nuages en haut, neige en bas, le reste = sol dégagé). Le <select> caché reste la valeur de référence.
+// Sélecteur de dates : une pastille par image, de la plus récente (gauche) à la plus ancienne. Le fond gris
+// est d'autant plus foncé que l'image est nuageuse. Le <select> caché reste la valeur de référence.
 function fillDates() {
   const sel = $("date"), strip = $("strip");
   sel.replaceChildren();
   strip.replaceChildren();
-  let lastMonth = "";
-  for (const d of [...data.dates].reverse()) {
+  for (const d of data.dates) {
     const o = document.createElement("option");
     o.value = d.date;
     o.textContent = fmtDate(d.date);
     sel.append(o);
 
     const when = new Date(d.date + "T12:00:00");
-    const month = when.toLocaleDateString("fr-FR", { month: "short" }).replace(".", "");
+    const partial = d.data_pct < DATA_MIN;
     const b = document.createElement("button");
     b.type = "button";
     b.dataset.date = d.date;
-    b.className = "day" + (d.data_pct < DATA_MIN ? " partial" : "");
-    b.title = `${fmtDate(d.date)} : nuages ${pct(d.cloud_pct)}, neige ${pct(d.snow_pct)}, couverture ${pct(d.data_pct)}` +
-      (d.data_pct < DATA_MIN ? " (faible)" : "");
-    b.innerHTML = `<span class="col"><i class="cl" style="height:${Math.min(d.cloud_pct, 100)}%"></i>` +
-      `<i class="sn" style="height:${Math.min(d.snow_pct, 100)}%"></i></span>` +
-      `<span class="lab">${when.getDate()}${month !== lastMonth ? `<small>${month}</small>` : ""}</span>`;
-    lastMonth = month;
+    b.className = "day" + (partial ? " partial" : "");
+    b.style.setProperty("--c", Math.round(Math.min(d.cloud_pct, 100) * 0.85) + "%");
+    b.title = `${fmtDate(d.date)} : nuages ${pct(d.cloud_pct)}, couverture ${pct(d.data_pct)}` + (partial ? " (faible)" : "");
+    b.innerHTML = `<span class="d">${when.toLocaleDateString("fr-FR", { day: "numeric", month: "short" }).replace(".", "")}</span>` +
+      `<span class="s">${partial ? "zone partielle" : "nuages " + pct(d.cloud_pct)}</span>`;
     b.addEventListener("click", () => showScene(d.date));
     strip.append(b);
   }
@@ -225,7 +222,7 @@ function markDate(date) {
   for (const b of $("strip").children) {
     const on = b.dataset.date === date;
     b.setAttribute("aria-pressed", on);
-    if (on) b.scrollIntoView({ inline: "center", block: "nearest" });
+    if (on) b.scrollIntoView({ inline: "nearest", block: "nearest" });
   }
 }
 
@@ -288,16 +285,16 @@ document.querySelectorAll("[data-layer]").forEach((b) => b.addEventListener("cli
   if (data) showScene($("date").value);
 }));
 
-// Le PNG est demandé à la volée (l'affichage utilise le format par défaut, plus léger).
-$("download").addEventListener("click", async () => {
-  const btn = $("download"), date = $("date").value;
+// PNG et GeoTIFF sont demandés à la volée, en pleine résolution et sans perte (l'affichage utilise le WebP, plus léger).
+document.querySelectorAll("[data-fmt]").forEach((btn) => btn.addEventListener("click", async () => {
+  const fmt = btn.dataset.fmt, date = $("date").value;
   btn.disabled = true;
   try {
-    const res = await api(`/api/scene?lat=${point.lat.toFixed(5)}&lon=${point.lon.toFixed(5)}&date=${date}&layer=${layer}&format=png`);
+    const res = await api(`/api/scene?lat=${point.lat.toFixed(5)}&lon=${point.lon.toFixed(5)}&date=${date}&layer=${layer}&format=${fmt}`);
     if (!res.ok) throw new Error(res.status);
     const a = document.createElement("a");
     a.href = URL.createObjectURL(await res.blob());
-    a.download = `sentinel2_${layer}_${date}_${point.lat.toFixed(3)}_${point.lon.toFixed(3)}.png`;
+    a.download = `sentinel2_${layer}_${date}_${point.lat.toFixed(3)}_${point.lon.toFixed(3)}.${fmt}`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 10000);
   } catch (err) {
@@ -305,4 +302,4 @@ $("download").addEventListener("click", async () => {
   } finally {
     btn.disabled = false;
   }
-});
+}));
