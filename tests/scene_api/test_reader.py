@@ -1,5 +1,7 @@
 """Lecture reelle d'un petit COG local synthetique via RasterioReader (sans reseau) ; test reseau optionnel."""
 
+from datetime import UTC, datetime, timedelta
+
 import numpy as np
 import pytest
 import rasterio
@@ -69,9 +71,7 @@ def test_item_to_ref_asset_names():
 
     class It:
         id = "S2X"
-        from datetime import datetime, timezone
-
-        datetime = datetime(2026, 10, 28, 10, 30, tzinfo=timezone.utc)
+        datetime = datetime(2026, 10, 28, 10, 30, tzinfo=UTC)
         properties = {"eo:cloud_cover": 12.0}
         assets = {"visual": A("v"), "B03": A("g", [{"scale": 0.0001, "offset": -0.1}]), "B11": A("s"), "SCL": A("c")}
 
@@ -82,8 +82,6 @@ def test_item_to_ref_asset_names():
 
 @pytest.mark.network
 def test_live_planetary_search():
-    from datetime import UTC, datetime, timedelta
-
     now = datetime.now(UTC)
     items = StacSearcher(PLANETARY).search((1.2, 42.7, 1.5, 42.9), now - timedelta(days=30), now)
     assert items and isinstance(items[0], ItemRef)
