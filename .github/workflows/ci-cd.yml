@@ -39,7 +39,10 @@ jobs:
       env:
         EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME: ${{ secrets.EODAG__COP_DATASPACE__AUTH__CREDENTIALS__USERNAME }}
         EODAG__COP_DATASPACE__AUTH__CREDENTIALS__PASSWORD: ${{ secrets.EODAG__COP_DATASPACE__AUTH__CREDENTIALS__PASSWORD }}      
-      run: uv run python -m unittest discover -s tests
+      run: uv run pytest tests --ignore=tests/scene_api
+
+    - name: Run scene-api tests
+      run: uv run --group scene-api pytest tests/scene_api
 
     - name: Build package
       run: uv build

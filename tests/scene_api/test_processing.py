@@ -1,5 +1,8 @@
+import io
+
 import numpy as np
 import pytest
+import rasterio
 
 from scene_api import processing as p
 
@@ -101,10 +104,6 @@ def test_snow_mask_ignores_dark_pixels_with_noisy_ndsi():
 
 
 def test_geotiff_is_georeferenced_and_lossless():
-    import io
-
-    import rasterio
-
     rgba = np.random.default_rng(0).integers(0, 255, (40, 50, 4), dtype=np.uint8)
     data, ctype = p.encode(rgba, "tif", (0.5, 42.5, 0.75, 42.7))
     assert ctype == "image/tiff"

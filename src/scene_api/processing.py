@@ -109,7 +109,9 @@ def encode_geotiff(rgba: np.ndarray, bbox: tuple[float, float, float, float]) ->
         return mem.read(), "image/tiff"
 
 
-def encode(rgba: np.ndarray, fmt: str = "webp", bbox: tuple[float, float, float, float] | None = None) -> tuple[bytes, str]:
+def encode(
+    rgba: np.ndarray, fmt: str = "webp", bbox: tuple[float, float, float, float] | None = None
+) -> tuple[bytes, str]:
     if fmt == "tif":
         return encode_geotiff(rgba, bbox)
     buf = io.BytesIO()
